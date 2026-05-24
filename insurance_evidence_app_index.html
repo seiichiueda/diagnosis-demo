@@ -1,0 +1,921 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>保険提案エビデンス記録アプリ 仮運用版</title>
+  <style>
+    :root {
+      --bg: #f5f7fb;
+      --card: #ffffff;
+      --text: #1f2937;
+      --muted: #6b7280;
+      --line: #e5e7eb;
+      --accent: #2563eb;
+      --accent-dark: #1d4ed8;
+      --ok: #047857;
+      --warn: #b45309;
+      --danger: #b91c1c;
+      --shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.7;
+    }
+
+    header {
+      background: linear-gradient(135deg, #1d4ed8, #3b82f6);
+      color: white;
+      padding: 28px 16px;
+      text-align: center;
+    }
+
+    header h1 {
+      margin: 0;
+      font-size: 1.8rem;
+      letter-spacing: 0.04em;
+    }
+
+    header p {
+      margin: 10px 0 0;
+      opacity: 0.92;
+      font-size: 0.95rem;
+    }
+
+    main {
+      max-width: 1080px;
+      margin: 0 auto;
+      padding: 22px 14px 56px;
+    }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      box-shadow: var(--shadow);
+      padding: 20px;
+      margin-bottom: 18px;
+    }
+
+    .section-title {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin: 0 0 14px;
+      font-size: 1.2rem;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 30px;
+      height: 30px;
+      border-radius: 999px;
+      background: #dbeafe;
+      color: #1d4ed8;
+      font-weight: 700;
+      font-size: 0.9rem;
+    }
+
+    .description {
+      color: var(--muted);
+      margin: 0 0 16px;
+    }
+
+    .input-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    label {
+      display: block;
+      font-weight: 700;
+      margin-bottom: 6px;
+      font-size: 0.92rem;
+    }
+
+    input,
+    select,
+    textarea {
+      width: 100%;
+      border: 1px solid #d1d5db;
+      border-radius: 12px;
+      padding: 11px 12px;
+      font-size: 1rem;
+      background: white;
+    }
+
+    textarea {
+      min-height: 90px;
+      resize: vertical;
+    }
+
+    .full {
+      grid-column: 1 / -1;
+    }
+
+    .question {
+      border-top: 1px solid var(--line);
+      padding-top: 18px;
+      margin-top: 18px;
+    }
+
+    .question:first-of-type {
+      border-top: none;
+      padding-top: 0;
+      margin-top: 0;
+    }
+
+    .question h3 {
+      margin: 0 0 10px;
+      font-size: 1.05rem;
+    }
+
+    .options {
+      display: grid;
+      gap: 10px;
+    }
+
+    .option {
+      display: flex;
+      gap: 10px;
+      align-items: flex-start;
+      border: 1px solid #d1d5db;
+      border-radius: 14px;
+      padding: 12px;
+      cursor: pointer;
+      transition: 0.15s ease;
+      background: #fff;
+    }
+
+    .option:hover {
+      border-color: var(--accent);
+      background: #eff6ff;
+    }
+
+    .option input {
+      width: auto;
+      margin-top: 6px;
+    }
+
+    .button-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 18px;
+    }
+
+    button {
+      border: none;
+      border-radius: 12px;
+      padding: 12px 18px;
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: 0.15s ease;
+    }
+
+    .primary {
+      background: var(--accent);
+      color: white;
+    }
+
+    .primary:hover {
+      background: var(--accent-dark);
+    }
+
+    .secondary {
+      background: #e5e7eb;
+      color: #111827;
+    }
+
+    .secondary:hover {
+      background: #d1d5db;
+    }
+
+    .danger-button {
+      background: #fee2e2;
+      color: var(--danger);
+    }
+
+    .danger-button:hover {
+      background: #fecaca;
+    }
+
+    .result-box {
+      display: none;
+      border-radius: 18px;
+      padding: 18px;
+      margin-top: 16px;
+      border: 1px solid var(--line);
+      background: #f9fafb;
+    }
+
+    .result-score {
+      font-size: 2rem;
+      font-weight: 800;
+      margin: 0;
+    }
+
+    .rank {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-weight: 800;
+      margin-left: 8px;
+      background: #dcfce7;
+      color: var(--ok);
+    }
+
+    .rank.warn {
+      background: #fef3c7;
+      color: var(--warn);
+    }
+
+    .rank.danger {
+      background: #fee2e2;
+      color: var(--danger);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 14px;
+      overflow: hidden;
+      border-radius: 12px;
+    }
+
+    th,
+    td {
+      border: 1px solid var(--line);
+      padding: 10px;
+      text-align: left;
+      vertical-align: top;
+      font-size: 0.92rem;
+    }
+
+    th {
+      background: #f3f4f6;
+    }
+
+    .small {
+      color: var(--muted);
+      font-size: 0.86rem;
+    }
+
+    .copy-area {
+      white-space: pre-wrap;
+      background: #111827;
+      color: #f9fafb;
+      padding: 14px;
+      border-radius: 14px;
+      margin-top: 12px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 0.86rem;
+      display: none;
+    }
+
+    .notice {
+      border-left: 5px solid var(--accent);
+      background: #eff6ff;
+      padding: 12px 14px;
+      border-radius: 12px;
+      color: #1e3a8a;
+      margin-top: 12px;
+    }
+
+    footer {
+      text-align: center;
+      color: var(--muted);
+      font-size: 0.82rem;
+      padding: 24px 12px;
+    }
+
+    @media print {
+      header,
+      .button-row,
+      footer {
+        display: none;
+      }
+
+      body {
+        background: white;
+      }
+
+      main {
+        max-width: none;
+        padding: 0;
+      }
+
+      .card {
+        box-shadow: none;
+        border-radius: 0;
+        break-inside: avoid;
+      }
+
+      .copy-area {
+        display: block;
+        background: white;
+        color: black;
+        border: 1px solid #999;
+      }
+    }
+
+    @media (max-width: 720px) {
+      header h1 {
+        font-size: 1.45rem;
+      }
+
+      .input-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .card {
+        padding: 16px;
+        border-radius: 16px;
+      }
+
+      button {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>保険提案エビデンス記録アプリ 仮運用版</h1>
+    <p>意向把握・提案理由・説明・承諾・最終確認を記録し、証跡テキストとPDF保存に使う単一ファイル版</p>
+  </header>
+
+  <main>
+    <section class="card">
+      <h2 class="section-title"><span class="badge">1</span>案件基本情報</h2>
+      <p class="description">仮運用なので、GitHub Pages公開時は本名・住所・契約番号などの個人情報は入れない想定です。</p>
+
+      <div class="input-grid">
+        <div>
+          <label for="案件ID">案件ID</label>
+          <input id="案件ID" type="text" placeholder="例：TEST-2026-001" />
+        </div>
+
+        <div>
+          <label for="顧客名">顧客名またはテスト名</label>
+          <input id="顧客名" type="text" placeholder="例：テスト顧客A" />
+        </div>
+
+        <div>
+          <label for="担当者名">担当者名</label>
+          <input id="担当者名" type="text" placeholder="例：担当者A" />
+        </div>
+
+        <div>
+          <label for="募集区分">募集区分</label>
+          <select id="募集区分">
+            <option value="未選択">選択してください</option>
+            <option value="新規">新規</option>
+            <option value="更新">更新</option>
+            <option value="乗換">乗換</option>
+            <option value="見直し">見直し</option>
+            <option value="その他">その他</option>
+          </select>
+        </div>
+
+        <div>
+          <label for="保険種目">保険種目</label>
+          <select id="保険種目">
+            <option value="未選択">選択してください</option>
+            <option value="自動車保険">自動車保険</option>
+            <option value="火災保険">火災保険</option>
+            <option value="傷害保険">傷害保険</option>
+            <option value="医療保険">医療保険</option>
+            <option value="生命保険">生命保険</option>
+            <option value="法人向け保険">法人向け保険</option>
+            <option value="その他">その他</option>
+          </select>
+        </div>
+
+        <div>
+          <label for="面談方法">面談・確認方法</label>
+          <select id="面談方法">
+            <option value="未選択">選択してください</option>
+            <option value="対面">対面</option>
+            <option value="電話">電話</option>
+            <option value="メール">メール</option>
+            <option value="オンライン面談">オンライン面談</option>
+            <option value="書面">書面</option>
+            <option value="その他">その他</option>
+          </select>
+        </div>
+
+        <div class="full">
+          <label for="案件メモ">案件メモ</label>
+          <textarea id="案件メモ" placeholder="例：既契約の更新時に補償範囲の見直し希望あり。"></textarea>
+        </div>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2 class="section-title"><span class="badge">2</span>意向・提案・承諾の記録</h2>
+      <p class="description">顧客意向、提案理由、説明内容、承諾経緯を文章で残します。後から読んで経緯が分かることを重視します。</p>
+
+      <div class="input-grid">
+        <div class="full">
+          <label for="初回意向">初回意向</label>
+          <textarea id="初回意向" placeholder="例：保険料は抑えたいが、事故時の自己負担が大きくなりすぎるのは避けたい。"></textarea>
+        </div>
+
+        <div class="full">
+          <label for="提案内容">提案内容</label>
+          <textarea id="提案内容" placeholder="例：A社プラン1、B社プラン2を比較し、最終的にA社プラン1を提案。"></textarea>
+        </div>
+
+        <div class="full">
+          <label for="比較推奨理由">比較推奨理由</label>
+          <textarea id="比較推奨理由" placeholder="例：顧客の保険料重視の意向に沿いつつ、必要な補償範囲を維持できるため。"></textarea>
+        </div>
+
+        <div class="full">
+          <label for="説明内容">説明内容・質問回答</label>
+          <textarea id="説明内容" placeholder="例：補償対象外、免責金額、更新後保険料、乗換時の注意点を説明。顧客から免責金額について質問あり、回答済み。"></textarea>
+        </div>
+
+        <div class="full">
+          <label for="承諾経緯">顧客承諾経緯</label>
+          <textarea id="承諾経緯" placeholder="例：2026/05/24 電話にて提案内容・保険料・補償内容を説明し、顧客より了承を得た。"></textarea>
+        </div>
+
+        <div class="full">
+          <label for="最終意向">最終意向・契約内容との一致確認</label>
+          <textarea id="最終意向" placeholder="例：最終意向は、保険料を抑えつつ基本補償を維持すること。提案内容と一致することを確認。"></textarea>
+        </div>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2 class="section-title"><span class="badge">3</span>チェック項目</h2>
+      <p class="description">各項目で、今回の案件に最も近いものを1つ選んでください。点数は「証跡の充足度」として集計します。</p>
+
+      <div id="設問エリア"></div>
+
+      <div class="button-row">
+        <button class="primary" onclick="証跡判定する()">証跡判定する</button>
+        <button class="secondary" onclick="一時保存する()">この端末に一時保存</button>
+        <button class="secondary" onclick="一時保存を読み込む()">一時保存を読み込む</button>
+        <button class="danger-button" onclick="リセットする()">リセット</button>
+      </div>
+
+      <div class="notice">
+        この単一ファイル版の一時保存はブラウザのlocalStorageです。会社の本番データ・個人情報・機微情報は入れないでください。
+      </div>
+    </section>
+
+    <section class="card">
+      <h2 class="section-title"><span class="badge">4</span>判定結果・証跡出力</h2>
+      <p class="description">結果は画面内に表示します。必要ならコピー用テキストを作成し、印刷・PDF保存できます。</p>
+
+      <div id="結果エリア" class="result-box"></div>
+
+      <div class="button-row">
+        <button class="secondary" onclick="コピー用テキストを作る()">コピー用テキストを作る</button>
+        <button class="secondary" onclick="window.print()">印刷・PDF保存</button>
+      </div>
+
+      <div id="コピーエリア" class="copy-area"></div>
+    </section>
+  </main>
+
+  <footer>
+    仮運用版。GitHub Pages公開時は、会社名・個人情報・本番契約情報を入れないこと。
+  </footer>
+
+  <script>
+    const 設問一覧 = [
+      {
+        id: "q1",
+        title: "Q1. 顧客の初回意向は記録されていますか？",
+        options: [
+          { text: "具体的な希望・重視点・制約条件まで記録している", score: 3 },
+          { text: "主な希望は記録しているが、理由や背景は一部不足している", score: 2 },
+          { text: "簡単なメモ程度で、後から経緯を追いにくい", score: 1 },
+          { text: "初回意向の記録がない", score: 0 }
+        ]
+      },
+      {
+        id: "q2",
+        title: "Q2. 提案した商品・プランの内容は記録されていますか？",
+        options: [
+          { text: "保険会社・商品名・プラン・保険料・主な補償内容まで記録している", score: 3 },
+          { text: "商品名や保険料など主要項目は記録している", score: 2 },
+          { text: "提案した事実は分かるが、内容の詳細が不足している", score: 1 },
+          { text: "提案内容の記録がない", score: 0 }
+        ]
+      },
+      {
+        id: "q3",
+        title: "Q3. 比較推奨理由は説明可能な形で残っていますか？",
+        options: [
+          { text: "顧客意向との対応関係、選定理由、他案との差が明確に残っている", score: 3 },
+          { text: "選定理由は残っているが、他案との差はやや不足している", score: 2 },
+          { text: "担当者の判断としては分かるが、第三者には説明しにくい", score: 1 },
+          { text: "比較推奨理由の記録がない", score: 0 }
+        ]
+      },
+      {
+        id: "q4",
+        title: "Q4. 重要事項・不利益事項の説明記録はありますか？",
+        options: [
+          { text: "重要事項、免責、不利益事項、質問回答まで記録している", score: 3 },
+          { text: "重要事項説明を行った記録はあるが、質問回答などは一部不足している", score: 2 },
+          { text: "説明済みチェックのみで、説明内容の詳細は少ない", score: 1 },
+          { text: "説明記録がない", score: 0 }
+        ]
+      },
+      {
+        id: "q5",
+        title: "Q5. 顧客の承諾経緯は後から確認できますか？",
+        options: [
+          { text: "承諾日時・方法・確認者・顧客コメントまで確認できる", score: 3 },
+          { text: "承諾日時と方法は確認できる", score: 2 },
+          { text: "了承を得たことは分かるが、具体的経緯が不足している", score: 1 },
+          { text: "承諾経緯の記録がない", score: 0 }
+        ]
+      },
+      {
+        id: "q6",
+        title: "Q6. 最終意向と契約内容の一致確認は記録されていますか？",
+        options: [
+          { text: "最終意向、契約内容、相違有無、顧客確認まで記録している", score: 3 },
+          { text: "最終意向と契約内容の一致確認は記録している", score: 2 },
+          { text: "契約内容は残っているが、最終意向との対応が弱い", score: 1 },
+          { text: "最終意向確認の記録がない", score: 0 }
+        ]
+      },
+      {
+        id: "q7",
+        title: "Q7. 変更・差戻し・再説明があった場合の履歴は残っていますか？",
+        options: [
+          { text: "変更前後、変更理由、再説明内容、再承諾まで履歴化している", score: 3 },
+          { text: "変更理由と変更後内容は記録している", score: 2 },
+          { text: "最新状態は分かるが、途中経過は追いにくい", score: 1 },
+          { text: "変更履歴は残していない", score: 0 }
+        ]
+      }
+    ];
+
+    function 初期表示する() {
+      const 設問エリア = document.getElementById("設問エリア");
+      設問エリア.innerHTML = "";
+
+      設問一覧.forEach((設問) => {
+        const 設問ブロック = document.createElement("div");
+        設問ブロック.className = "question";
+
+        const 見出し = document.createElement("h3");
+        見出し.textContent = 設問.title;
+        設問ブロック.appendChild(見出し);
+
+        const 選択肢エリア = document.createElement("div");
+        選択肢エリア.className = "options";
+
+        設問.options.forEach((選択肢) => {
+          const ラベル = document.createElement("label");
+          ラベル.className = "option";
+
+          const ラジオ = document.createElement("input");
+          ラジオ.type = "radio";
+          ラジオ.name = 設問.id;
+          ラジオ.value = String(選択肢.score);
+          ラジオ.dataset.text = 選択肢.text;
+
+          const 表示文 = document.createElement("span");
+          表示文.textContent = 選択肢.text;
+
+          ラベル.appendChild(ラジオ);
+          ラベル.appendChild(表示文);
+          選択肢エリア.appendChild(ラベル);
+        });
+
+        設問ブロック.appendChild(選択肢エリア);
+        設問エリア.appendChild(設問ブロック);
+      });
+    }
+
+    function 入力値を取得する() {
+      const 入力ID一覧 = [
+        "案件ID",
+        "顧客名",
+        "担当者名",
+        "募集区分",
+        "保険種目",
+        "面談方法",
+        "案件メモ",
+        "初回意向",
+        "提案内容",
+        "比較推奨理由",
+        "説明内容",
+        "承諾経緯",
+        "最終意向"
+      ];
+
+      const 入力値 = {};
+
+      入力ID一覧.forEach((入力ID) => {
+        入力値[入力ID] = document.getElementById(入力ID).value.trim();
+      });
+
+      return 入力値;
+    }
+
+    function 入力値を設定する(入力値) {
+      Object.keys(入力値).forEach((入力ID) => {
+        const 要素 = document.getElementById(入力ID);
+
+        if (要素) {
+          要素.value = 入力値[入力ID];
+        }
+      });
+    }
+
+    function 証跡判定する() {
+      const 入力値 = 入力値を取得する();
+
+      let 合計点 = 0;
+      const 回答一覧 = [];
+
+      for (const 設問 of 設問一覧) {
+        const 選択済み = document.querySelector(`input[name="${設問.id}"]:checked`);
+
+        if (!選択済み) {
+          alert(`${設問.title} が未回答です。`);
+          return;
+        }
+
+        const 点数 = Number(選択済み.value);
+        合計点 += 点数;
+
+        回答一覧.push({
+          設問: 設問.title,
+          回答: 選択済み.dataset.text,
+          点数: 点数
+        });
+      }
+
+      const 最大点 = 設問一覧.length * 3;
+      const 判定 = 判定を取得する(合計点, 最大点);
+      結果を表示する(入力値, 合計点, 最大点, 判定, 回答一覧);
+    }
+
+    function 判定を取得する(合計点, 最大点) {
+      const 割合 = 合計点 / 最大点;
+
+      if (割合 >= 0.8) {
+        return {
+          rank: "A",
+          className: "",
+          title: "証跡はかなり整っています",
+          message: "意向把握、提案理由、説明、承諾、最終確認の流れが後から検証しやすい状態です。次は添付資料管理や変更履歴の自動保存を検討できます。"
+        };
+      }
+
+      if (割合 >= 0.5) {
+        return {
+          rank: "B",
+          className: "warn",
+          title: "主要な証跡はありますが、補強余地があります",
+          message: "提案理由や承諾経緯など、第三者が後から読んでも分かる粒度まで補強すると、監査・照会対応に強くなります。"
+        };
+      }
+
+      return {
+        rank: "C",
+        className: "danger",
+        title: "証跡不足のリスクがあります",
+        message: "初回意向、比較推奨理由、重要事項説明、顧客承諾、最終意向確認を優先して記録する必要があります。"
+      };
+    }
+
+    function 結果を表示する(入力値, 合計点, 最大点, 判定, 回答一覧) {
+      const 結果エリア = document.getElementById("結果エリア");
+      結果エリア.style.display = "block";
+
+      const 回答行 = 回答一覧.map((行) => {
+        return `
+          <tr>
+            <td>${HTMLをエスケープする(行.設問)}</td>
+            <td>${HTMLをエスケープする(行.回答)}</td>
+            <td>${行.点数}</td>
+          </tr>
+        `;
+      }).join("");
+
+      結果エリア.innerHTML = `
+        <p class="small">
+          案件ID：${HTMLをエスケープする(入力値.案件ID || "未入力")}
+          ／ 顧客：${HTMLをエスケープする(入力値.顧客名 || "未入力")}
+          ／ 担当：${HTMLをエスケープする(入力値.担当者名 || "未入力")}
+        </p>
+
+        <p class="result-score">
+          ${合計点} / ${最大点}
+          <span class="rank ${判定.className}">判定 ${判定.rank}</span>
+        </p>
+
+        <h3>${判定.title}</h3>
+        <p>${判定.message}</p>
+
+        <table>
+          <thead>
+            <tr>
+              <th>項目</th>
+              <th>選択内容</th>
+              <th>点数</th>
+            </tr>
+          </thead>
+          <tbody>${回答行}</tbody>
+        </table>
+      `;
+
+      結果エリア.dataset.summary = JSON.stringify({
+        作成日時: new Date().toLocaleString("ja-JP"),
+        入力値,
+        合計点,
+        最大点,
+        判定: 判定.rank,
+        判定タイトル: 判定.title,
+        判定メッセージ: 判定.message,
+        回答一覧
+      });
+    }
+
+    function コピー用テキストを作る() {
+      const 結果エリア = document.getElementById("結果エリア");
+      const コピーエリア = document.getElementById("コピーエリア");
+
+      if (!結果エリア.dataset.summary) {
+        alert("先に証跡判定してください。");
+        return;
+      }
+
+      const 結果 = JSON.parse(結果エリア.dataset.summary);
+      const 入力値 = 結果.入力値;
+
+      const 回答テキスト = 結果.回答一覧.map((行, index) => {
+        return `${index + 1}. ${行.設問}\n選択：${行.回答}\n点数：${行.点数}`;
+      }).join("\n\n");
+
+      const テキスト =
+`保険提案エビデンス記録
+
+作成日時：${結果.作成日時}
+
+【1. 案件基本情報】
+案件ID：${入力値.案件ID || "未入力"}
+顧客名：${入力値.顧客名 || "未入力"}
+担当者名：${入力値.担当者名 || "未入力"}
+募集区分：${入力値.募集区分 || "未選択"}
+保険種目：${入力値.保険種目 || "未選択"}
+面談・確認方法：${入力値.面談方法 || "未選択"}
+案件メモ：
+${入力値.案件メモ || "未入力"}
+
+【2. 意向・提案・承諾の記録】
+初回意向：
+${入力値.初回意向 || "未入力"}
+
+提案内容：
+${入力値.提案内容 || "未入力"}
+
+比較推奨理由：
+${入力値.比較推奨理由 || "未入力"}
+
+説明内容・質問回答：
+${入力値.説明内容 || "未入力"}
+
+顧客承諾経緯：
+${入力値.承諾経緯 || "未入力"}
+
+最終意向・契約内容との一致確認：
+${入力値.最終意向 || "未入力"}
+
+【3. 証跡充足度判定】
+点数：${結果.合計点} / ${結果.最大点}
+判定：${結果.判定} ${結果.判定タイトル}
+コメント：${結果.判定メッセージ}
+
+【4. チェック詳細】
+${回答テキスト}`;
+
+      コピーエリア.style.display = "block";
+      コピーエリア.textContent = テキスト;
+
+      navigator.clipboard?.writeText(テキスト).catch(() => {
+        console.log("クリップボードへの自動コピーはできませんでした。");
+      });
+    }
+
+    function 一時保存する() {
+      const 入力値 = 入力値を取得する();
+      const 回答値 = {};
+
+      設問一覧.forEach((設問) => {
+        const 選択済み = document.querySelector(`input[name="${設問.id}"]:checked`);
+        回答値[設問.id] = 選択済み ? 選択済み.value : "";
+      });
+
+      const 保存データ = {
+        入力値,
+        回答値,
+        保存日時: new Date().toLocaleString("ja-JP")
+      };
+
+      localStorage.setItem("保険提案エビデンス仮保存", JSON.stringify(保存データ));
+      alert("この端末に一時保存しました。");
+    }
+
+    function 一時保存を読み込む() {
+      const 保存文字列 = localStorage.getItem("保険提案エビデンス仮保存");
+
+      if (!保存文字列) {
+        alert("一時保存データがありません。");
+        return;
+      }
+
+      const 保存データ = JSON.parse(保存文字列);
+      入力値を設定する(保存データ.入力値 || {});
+
+      Object.keys(保存データ.回答値 || {}).forEach((設問ID) => {
+        const 値 = 保存データ.回答値[設問ID];
+        const ラジオ = document.querySelector(`input[name="${設問ID}"][value="${値}"]`);
+
+        if (ラジオ) {
+          ラジオ.checked = true;
+        }
+      });
+
+      alert(`一時保存データを読み込みました。\n保存日時：${保存データ.保存日時 || "不明"}`);
+    }
+
+    function リセットする() {
+      const 入力ID一覧 = [
+        "案件ID",
+        "顧客名",
+        "担当者名",
+        "募集区分",
+        "保険種目",
+        "面談方法",
+        "案件メモ",
+        "初回意向",
+        "提案内容",
+        "比較推奨理由",
+        "説明内容",
+        "承諾経緯",
+        "最終意向"
+      ];
+
+      入力ID一覧.forEach((入力ID) => {
+        const 要素 = document.getElementById(入力ID);
+
+        if (要素.tagName === "SELECT") {
+          要素.value = "未選択";
+        } else {
+          要素.value = "";
+        }
+      });
+
+      document.querySelectorAll("input[type='radio']").forEach((要素) => {
+        要素.checked = false;
+      });
+
+      const 結果エリア = document.getElementById("結果エリア");
+      結果エリア.style.display = "none";
+      結果エリア.innerHTML = "";
+      delete 結果エリア.dataset.summary;
+
+      const コピーエリア = document.getElementById("コピーエリア");
+      コピーエリア.style.display = "none";
+      コピーエリア.textContent = "";
+    }
+
+    function HTMLをエスケープする(文字列) {
+      return String(文字列)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+
+    初期表示する();
+  </script>
+</body>
+</html>

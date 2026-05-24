@@ -1,0 +1,599 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>診断アプリ 仮運用版</title>
+  <style>
+    :root {
+      --bg: #f5f7fb;
+      --card: #ffffff;
+      --text: #1f2937;
+      --muted: #6b7280;
+      --line: #e5e7eb;
+      --accent: #2563eb;
+      --accent-dark: #1d4ed8;
+      --ok: #047857;
+      --warn: #b45309;
+      --danger: #b91c1c;
+      --shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.7;
+    }
+
+    header {
+      background: linear-gradient(135deg, #1d4ed8, #3b82f6);
+      color: white;
+      padding: 28px 16px;
+      text-align: center;
+    }
+
+    header h1 {
+      margin: 0;
+      font-size: 1.8rem;
+      letter-spacing: 0.04em;
+    }
+
+    header p {
+      margin: 10px 0 0;
+      opacity: 0.92;
+      font-size: 0.95rem;
+    }
+
+    main {
+      max-width: 980px;
+      margin: 0 auto;
+      padding: 22px 14px 56px;
+    }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      box-shadow: var(--shadow);
+      padding: 20px;
+      margin-bottom: 18px;
+    }
+
+    .section-title {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin: 0 0 14px;
+      font-size: 1.2rem;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 30px;
+      height: 30px;
+      border-radius: 999px;
+      background: #dbeafe;
+      color: #1d4ed8;
+      font-weight: 700;
+      font-size: 0.9rem;
+    }
+
+    .description {
+      color: var(--muted);
+      margin: 0 0 16px;
+    }
+
+    .input-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    label {
+      display: block;
+      font-weight: 700;
+      margin-bottom: 6px;
+      font-size: 0.92rem;
+    }
+
+    input,
+    select,
+    textarea {
+      width: 100%;
+      border: 1px solid #d1d5db;
+      border-radius: 12px;
+      padding: 11px 12px;
+      font-size: 1rem;
+      background: white;
+    }
+
+    textarea {
+      min-height: 86px;
+      resize: vertical;
+    }
+
+    .question {
+      border-top: 1px solid var(--line);
+      padding-top: 18px;
+      margin-top: 18px;
+    }
+
+    .question:first-of-type {
+      border-top: none;
+      padding-top: 0;
+      margin-top: 0;
+    }
+
+    .question h3 {
+      margin: 0 0 10px;
+      font-size: 1.05rem;
+    }
+
+    .options {
+      display: grid;
+      gap: 10px;
+    }
+
+    .option {
+      display: flex;
+      gap: 10px;
+      align-items: flex-start;
+      border: 1px solid #d1d5db;
+      border-radius: 14px;
+      padding: 12px;
+      cursor: pointer;
+      transition: 0.15s ease;
+      background: #fff;
+    }
+
+    .option:hover {
+      border-color: var(--accent);
+      background: #eff6ff;
+    }
+
+    .option input {
+      width: auto;
+      margin-top: 6px;
+    }
+
+    .button-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 18px;
+    }
+
+    button {
+      border: none;
+      border-radius: 12px;
+      padding: 12px 18px;
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: 0.15s ease;
+    }
+
+    .primary {
+      background: var(--accent);
+      color: white;
+    }
+
+    .primary:hover {
+      background: var(--accent-dark);
+    }
+
+    .secondary {
+      background: #e5e7eb;
+      color: #111827;
+    }
+
+    .secondary:hover {
+      background: #d1d5db;
+    }
+
+    .result-box {
+      display: none;
+      border-radius: 18px;
+      padding: 18px;
+      margin-top: 16px;
+      border: 1px solid var(--line);
+      background: #f9fafb;
+    }
+
+    .result-score {
+      font-size: 2rem;
+      font-weight: 800;
+      margin: 0;
+    }
+
+    .rank {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-weight: 800;
+      margin-left: 8px;
+      background: #dcfce7;
+      color: var(--ok);
+    }
+
+    .rank.warn {
+      background: #fef3c7;
+      color: var(--warn);
+    }
+
+    .rank.danger {
+      background: #fee2e2;
+      color: var(--danger);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 14px;
+      overflow: hidden;
+      border-radius: 12px;
+    }
+
+    th,
+    td {
+      border: 1px solid var(--line);
+      padding: 10px;
+      text-align: left;
+      vertical-align: top;
+      font-size: 0.92rem;
+    }
+
+    th {
+      background: #f3f4f6;
+    }
+
+    .small {
+      color: var(--muted);
+      font-size: 0.86rem;
+    }
+
+    .copy-area {
+      white-space: pre-wrap;
+      background: #111827;
+      color: #f9fafb;
+      padding: 14px;
+      border-radius: 14px;
+      margin-top: 12px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 0.86rem;
+      display: none;
+    }
+
+    footer {
+      text-align: center;
+      color: var(--muted);
+      font-size: 0.82rem;
+      padding: 24px 12px;
+    }
+
+    @media (max-width: 720px) {
+      header h1 {
+        font-size: 1.45rem;
+      }
+
+      .input-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .card {
+        padding: 16px;
+        border-radius: 16px;
+      }
+
+      button {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>診断アプリ 仮運用版</h1>
+    <p>GitHub Pagesで公開するための、単一ファイル index.html サンプル</p>
+  </header>
+
+  <main>
+    <section class="card">
+      <h2 class="section-title"><span class="badge">1</span>基本情報</h2>
+      <p class="description">仮運用なので、個人情報や会社固有情報は入れない想定です。</p>
+
+      <div class="input-grid">
+        <div>
+          <label for="利用者名">利用者名またはテスト名</label>
+          <input id="利用者名" type="text" placeholder="例：テスト利用者A" />
+        </div>
+        <div>
+          <label for="所属区分">区分</label>
+          <select id="所属区分">
+            <option value="未選択">選択してください</option>
+            <option value="正社員">正社員</option>
+            <option value="契約社員">契約社員</option>
+            <option value="パート・アルバイト">パート・アルバイト</option>
+            <option value="その他">その他</option>
+          </select>
+        </div>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2 class="section-title"><span class="badge">2</span>設問</h2>
+      <p class="description">各設問で最も近い選択肢を1つ選んでください。点数はJavaScript側で集計します。</p>
+
+      <div id="設問エリア"></div>
+
+      <div class="button-row">
+        <button class="primary" onclick="診断する()">診断する</button>
+        <button class="secondary" onclick="リセットする()">リセット</button>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2 class="section-title"><span class="badge">3</span>診断結果</h2>
+      <p class="description">結果はこの画面内で表示します。必要ならコピー用テキストを作れます。</p>
+
+      <div id="結果エリア" class="result-box"></div>
+
+      <div class="button-row">
+        <button class="secondary" onclick="コピー用テキストを作る()">コピー用テキストを作る</button>
+        <button class="secondary" onclick="window.print()">印刷・PDF保存</button>
+      </div>
+
+      <div id="コピーエリア" class="copy-area"></div>
+    </section>
+  </main>
+
+  <footer>
+    仮運用版。GitHub Pages公開時は、会社名・個人情報・本番データを入れないこと。
+  </footer>
+
+  <script>
+    const 設問一覧 = [
+      {
+        id: "q1",
+        title: "Q1. 手順や判断基準は明文化されていますか？",
+        options: [
+          { text: "ほぼ明文化されており、誰でも同じ判断ができる", score: 3 },
+          { text: "主要部分は明文化されているが、一部は口頭確認が必要", score: 2 },
+          { text: "担当者の経験や記憶に依存している", score: 1 },
+          { text: "ほとんど明文化されていない", score: 0 }
+        ]
+      },
+      {
+        id: "q2",
+        title: "Q2. 入力・転記・確認作業は標準化されていますか？",
+        options: [
+          { text: "標準フォーマットやチェック表があり、再現性が高い", score: 3 },
+          { text: "ある程度は標準化されている", score: 2 },
+          { text: "担当者ごとにやり方が違う", score: 1 },
+          { text: "完全に属人的である", score: 0 }
+        ]
+      },
+      {
+        id: "q3",
+        title: "Q3. エラーや例外が起きたときの対応は決まっていますか？",
+        options: [
+          { text: "エラー分類と対応手順が決まっている", score: 3 },
+          { text: "よくあるエラーだけは対応が決まっている", score: 2 },
+          { text: "詳しい人に聞いて対応している", score: 1 },
+          { text: "その場対応が多い", score: 0 }
+        ]
+      },
+      {
+        id: "q4",
+        title: "Q4. 作業結果の証跡は残りますか？",
+        options: [
+          { text: "ログ・PDF・一覧表などで証跡が残る", score: 3 },
+          { text: "一部の証跡は残る", score: 2 },
+          { text: "成果物はあるが、途中経過は残りにくい", score: 1 },
+          { text: "証跡はほとんど残らない", score: 0 }
+        ]
+      },
+      {
+        id: "q5",
+        title: "Q5. 他の人へ引き継いだ場合、同じ品質で実行できますか？",
+        options: [
+          { text: "手順化されており、かなり再現できる", score: 3 },
+          { text: "説明すれば再現できる", score: 2 },
+          { text: "かなり補足説明が必要", score: 1 },
+          { text: "特定担当者でないと難しい", score: 0 }
+        ]
+      }
+    ];
+
+    function 初期表示する() {
+      const 設問エリア = document.getElementById("設問エリア");
+      設問エリア.innerHTML = "";
+
+      設問一覧.forEach((設問, index) => {
+        const 設問ブロック = document.createElement("div");
+        設問ブロック.className = "question";
+
+        const 見出し = document.createElement("h3");
+        見出し.textContent = 設問.title;
+        設問ブロック.appendChild(見出し);
+
+        const 選択肢エリア = document.createElement("div");
+        選択肢エリア.className = "options";
+
+        設問.options.forEach((選択肢, 選択肢番号) => {
+          const ラベル = document.createElement("label");
+          ラベル.className = "option";
+
+          const ラジオ = document.createElement("input");
+          ラジオ.type = "radio";
+          ラジオ.name = 設問.id;
+          ラジオ.value = String(選択肢.score);
+          ラジオ.dataset.text = 選択肢.text;
+
+          const 表示文 = document.createElement("span");
+          表示文.textContent = 選択肢.text;
+
+          ラベル.appendChild(ラジオ);
+          ラベル.appendChild(表示文);
+          選択肢エリア.appendChild(ラベル);
+        });
+
+        設問ブロック.appendChild(選択肢エリア);
+        設問エリア.appendChild(設問ブロック);
+      });
+    }
+
+    function 診断する() {
+      const 利用者名 = document.getElementById("利用者名").value.trim() || "未入力";
+      const 所属区分 = document.getElementById("所属区分").value;
+
+      let 合計点 = 0;
+      const 回答一覧 = [];
+
+      for (const 設問 of 設問一覧) {
+        const 選択済み = document.querySelector(`input[name="${設問.id}"]:checked`);
+
+        if (!選択済み) {
+          alert(`${設問.title} が未回答です。`);
+          return;
+        }
+
+        const 点数 = Number(選択済み.value);
+        合計点 += 点数;
+
+        回答一覧.push({
+          設問: 設問.title,
+          回答: 選択済み.dataset.text,
+          点数: 点数
+        });
+      }
+
+      const 最大点 = 設問一覧.length * 3;
+      const 判定 = 判定を取得する(合計点, 最大点);
+      結果を表示する(利用者名, 所属区分, 合計点, 最大点, 判定, 回答一覧);
+    }
+
+    function 判定を取得する(合計点, 最大点) {
+      const 割合 = 合計点 / 最大点;
+
+      if (割合 >= 0.8) {
+        return {
+          rank: "A",
+          className: "",
+          title: "かなり構造化されています",
+          message: "手順・証跡・再現性が比較的整っています。次は自動化やダッシュボード化を検討できます。"
+        };
+      }
+
+      if (割合 >= 0.5) {
+        return {
+          rank: "B",
+          className: "warn",
+          title: "部分的に構造化されています",
+          message: "主要部分は整理されていますが、属人化や例外対応に弱さが残っています。Config化・チェック表化が有効です。"
+        };
+      }
+
+      return {
+        rank: "C",
+        className: "danger",
+        title: "構造化の余地が大きい状態です",
+        message: "判断基準・証跡・引き継ぎ性を優先して整備すると、業務の安定性が上がります。"
+      };
+    }
+
+    function 結果を表示する(利用者名, 所属区分, 合計点, 最大点, 判定, 回答一覧) {
+      const 結果エリア = document.getElementById("結果エリア");
+      結果エリア.style.display = "block";
+
+      const 回答行 = 回答一覧.map((行) => {
+        return `
+          <tr>
+            <td>${行.設問}</td>
+            <td>${行.回答}</td>
+            <td>${行.点数}</td>
+          </tr>
+        `;
+      }).join("");
+
+      結果エリア.innerHTML = `
+        <p class="small">利用者：${利用者名} ／ 区分：${所属区分}</p>
+        <p class="result-score">${合計点} / ${最大点}<span class="rank ${判定.className}">判定 ${判定.rank}</span></p>
+        <h3>${判定.title}</h3>
+        <p>${判定.message}</p>
+        <table>
+          <thead>
+            <tr>
+              <th>設問</th>
+              <th>回答</th>
+              <th>点数</th>
+            </tr>
+          </thead>
+          <tbody>${回答行}</tbody>
+        </table>
+      `;
+
+      結果エリア.dataset.summary = JSON.stringify({
+        利用者名,
+        所属区分,
+        合計点,
+        最大点,
+        判定: 判定.rank,
+        判定タイトル: 判定.title,
+        回答一覧
+      });
+    }
+
+    function コピー用テキストを作る() {
+      const 結果エリア = document.getElementById("結果エリア");
+      const コピーエリア = document.getElementById("コピーエリア");
+
+      if (!結果エリア.dataset.summary) {
+        alert("先に診断してください。");
+        return;
+      }
+
+      const 結果 = JSON.parse(結果エリア.dataset.summary);
+      const 回答テキスト = 結果.回答一覧.map((行, index) => {
+        return `${index + 1}. ${行.設問}\n回答：${行.回答}\n点数：${行.点数}`;
+      }).join("\n\n");
+
+      const テキスト = `診断結果\n\n利用者：${結果.利用者名}\n区分：${結果.所属区分}\n点数：${結果.合計点} / ${結果.最大点}\n判定：${結果.判定} ${結果.判定タイトル}\n\n回答詳細\n${回答テキスト}`;
+
+      コピーエリア.style.display = "block";
+      コピーエリア.textContent = テキスト;
+
+      navigator.clipboard?.writeText(テキスト).catch(() => {
+        console.log("クリップボードへの自動コピーはできませんでした。");
+      });
+    }
+
+    function リセットする() {
+      document.getElementById("利用者名").value = "";
+      document.getElementById("所属区分").value = "未選択";
+      document.querySelectorAll("input[type='radio']").forEach((要素) => {
+        要素.checked = false;
+      });
+
+      const 結果エリア = document.getElementById("結果エリア");
+      結果エリア.style.display = "none";
+      結果エリア.innerHTML = "";
+      delete 結果エリア.dataset.summary;
+
+      const コピーエリア = document.getElementById("コピーエリア");
+      コピーエリア.style.display = "none";
+      コピーエリア.textContent = "";
+    }
+
+    初期表示する();
+  </script>
+</body>
+</html>

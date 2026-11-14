@@ -148,6 +148,7 @@
     .d-notes h3 { color: var(--warn); }
     .nav-row { display: flex; justify-content: space-between; margin-top: 16px; gap: 10px; }
 
+    .warn-bar { background: #fef3c7; color: #92400e; border-bottom: 1px solid #fde68a; padding: 8px 16px; font-size: 0.9rem; font-weight: 700; text-align: center; }
     #print-root { position: fixed; left: -20000px; top: 0; width: 720px; }
     .vid { position: absolute; inset: 0; width: 100%; height: 100%; display: block; background: #0f172a; object-fit: contain; }
     .browser[data-mode="video"] .browser-bar { display: none; }
@@ -407,7 +408,7 @@
 
   <div id="print-root" aria-hidden="true"></div>
 
-<script src="steps.js" charset="utf-8"></script>
+<script src="steps.js" charset="utf-8" onerror="window.STEPS_JS_MISSING = true"></script>
 <script>
 /* =====================================================================
    1. 見本アニメ（動画ファイルが無いときに代わりに再生する模擬操作）
@@ -942,8 +943,60 @@ async function renderFinal(cv, step) {
    ===================================================================== */
 const $ = s => document.querySelector(s);
 const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-const MAN = window.MANUAL || {};
-const STEPS = Array.isArray(MAN.steps) ? MAN.steps : [];
+/* steps.js が無いときに使う標準の内容（steps.js と同じ文章。動画なし＝見本アニメで再生） */
+const DEFAULT_MANUAL = {
+  title: '基幹システム 操作マニュアル',
+  subtitle: '受注登録の基本操作',
+  steps: [
+    { title: 'ログイン', demo: 1,
+      purpose: '基幹システムにログインし、業務を開始します。',
+      steps: ['ブラウザで基幹システムのURLを開きます。', '「社員ID」に自分の社員番号（例：U10234）を入力します。', '「パスワード」を入力します。', '「ログイン」ボタンを押します。'],
+      points: ['パスワードを5回続けて間違えるとロックされます。解除は情報システム部へ連絡してください。', '共用PCで使った後は必ずログアウトしてください（STEP 10）。'] },
+    { title: 'メインメニューの見方', demo: 2,
+      purpose: 'ログイン後に表示されるメインメニューの見方を確認し、目的の業務を選びます。',
+      steps: ['画面左の業務メニュー、または中央のメニューボタンから業務を選びます。', '「お知らせ」欄で、システム停止予定などの連絡事項を確認します。', '今回は「顧客管理」を押して顧客検索画面へ進みます。'],
+      points: ['画面右上にログイン中の所属と氏名が表示されます。他人の名前になっていないか確認しましょう。'] },
+    { title: '顧客検索', demo: 3,
+      purpose: '受注を登録する顧客を検索します。',
+      steps: ['「顧客名（カナ）」に名前の一部を入力します（例：ヤマダ）。', '必要に応じて「担当店舗」を選んで絞り込みます。', '「検索」ボタンを押すと、条件に合う顧客が一覧表示されます。'],
+      points: ['カナは全角・半角どちらでも検索できます。', '電話番号はハイフンなしでも検索できます。'] },
+    { title: '検索結果から顧客を選択', demo: 4,
+      purpose: '一覧から対象の顧客を特定し、顧客詳細画面を開きます。',
+      steps: ['一覧の「顧客コード」「顧客名」「住所」を見て、対象の顧客を確認します。', '対象の行をクリックすると顧客詳細画面が開きます。'],
+      points: ['同姓同名の顧客がいる場合があります。住所・電話番号まで必ず確認してください。'] },
+    { title: '顧客情報の確認・編集', demo: 5,
+      purpose: '顧客の登録内容を確認し、変更があれば修正します。',
+      steps: ['基本情報（氏名・住所・電話番号など）が最新か確認します。', '修正する場合は「編集」ボタンを押します。', '変更箇所を入力し直します（例：電話番号）。', '「保存」ボタンを押すと変更が反映されます。'],
+      points: ['「保存」を押さずに画面を移動すると、変更は破棄されます。', '変更履歴は自動で記録されます。'] },
+    { title: '新規受注の登録画面を開く', demo: 6,
+      purpose: '選択中の顧客で新しい受注を作成します。',
+      steps: ['顧客詳細画面の「新規受注」ボタンを押します。', '受注登録画面が開き、顧客情報が引き継がれていることを確認します。', '受注日・納品予定日を確認します。'],
+      points: ['顧客を間違えて開いた場合は、左メニューの「顧客管理」から検索し直してください。'] },
+    { title: '商品・数量の入力', demo: 7,
+      purpose: '受注する商品と数量を明細に追加します。',
+      steps: ['「商品」プルダウンから商品を選びます。', '「数量」を入力します。', '「明細に追加」ボタンを押すと、下の明細表に1行追加されます。', '複数の商品がある場合は繰り返します。'],
+      points: ['金額・消費税・合計は自動計算されます。', '誤って追加した行は、行の右端の「削除」で取り消せます。'] },
+    { title: '入力内容の確認', demo: 8,
+      purpose: '登録の前に、受注内容に誤りがないか確認します。',
+      steps: ['「確認画面へ」ボタンを押します。', '顧客名・商品・数量・合計金額を確認します。', '誤りがあれば「戻る」で入力画面に戻って修正します。'],
+      points: ['合計金額が見積書と一致しているか確認しましょう。'] },
+    { title: '登録完了・伝票番号の控え', demo: 9,
+      purpose: '受注を確定し、発行された伝票番号を控えます。',
+      steps: ['確認画面の「登録する」ボタンを押します。', '確認メッセージで「OK」を押します。', '完了画面に表示される「受注伝票番号」を控えます。'],
+      points: ['伝票番号は問い合わせ・帳票出力・取消のときに必要です。', '「登録する」を2回押さないでください（二重登録の原因になります）。'] },
+    { title: '帳票出力とログアウト', demo: 10,
+      purpose: '受注伝票を出力し、作業を終えてログアウトします。',
+      steps: ['画面左の「帳票出力」を押します。', '「帳票の種類」で「受注伝票」を選びます。', '「伝票番号」に STEP 9 で控えた番号を入力します。', '「出力」を押すとプレビューが表示され、印刷・PDF保存ができます。', '作業が終わったら、画面右上の「ログアウト」を押します。'],
+      points: ['ログアウトせずにブラウザを閉じると、一定時間ログイン状態が残ります。必ずログアウトしてください。'] }
+  ]
+};
+
+/* steps.js が正しく読めればその内容、無ければ（HTML単体で開いた場合など）標準の内容を使う */
+const LOADED = window.MANUAL && Array.isArray(window.MANUAL.steps) && window.MANUAL.steps.length > 0;
+const MAN = LOADED ? window.MANUAL : DEFAULT_MANUAL;
+const STEPS = MAN.steps;
+/* steps.js はあるのに読めなかった（書き間違い）ときだけ注意を出す */
+const STEPS_JS_BROKEN = !LOADED && !window.STEPS_JS_MISSING;
 const state = { idx: 0, speed: 1, runner: null, status: 'idle', mode: 'demo', visited: loadVisited(), printReady: false };
 
 function loadVisited() {
@@ -1260,19 +1313,15 @@ window.addEventListener('afterprint', () => { state.printReady = false; });
 window.ManualApp = { STEPS, DEMOS, buildPrint, choosePrint, select, state, video };
 
 /* ---------- 起動 ---------- */
-if (!STEPS.length) {
-  $('.layout').innerHTML = `<div class="card" style="padding:24px;grid-column:1/-1">
-    <h2 style="margin-top:0">マニュアルの材料（steps.js）を読み込めませんでした</h2>
-    <p>ZIP ファイルは<strong>「すべて展開」してから</strong> manual.html を開いてください。<br>
-    展開済みの場合は、manual.html と同じフォルダに steps.js があるか、steps.js の書き方（カンマ・括弧の抜け）を確認してください。</p></div>`;
-  $('#print-all').disabled = true;
-} else {
-  if (MAN.title) { $('.app-header h1').textContent = MAN.title; document.title = MAN.title; }
-  const m = location.hash.match(/^#step-(\d+)$/);
-  select(m ? +m[1] - 1 : 0);
-  /* Ctrl+P でも印刷できるよう、印刷用ページを裏で準備しておく */
-  setTimeout(buildPrint, 1500);
+if (STEPS_JS_BROKEN) {
+  $('.app-header').insertAdjacentHTML('afterend', `<div class="warn-bar">steps.js を読み込めなかったため、標準の内容を表示しています。steps.js の書き方（' や , の抜け）を確認してください。</div>`);
 }
+if (MAN.title) { $('.app-header h1').textContent = MAN.title; document.title = MAN.title; }
+const m = location.hash.match(/^#step-(\d+)$/);
+select(m ? +m[1] - 1 : 0);
+/* Ctrl+P でも印刷できるよう、印刷用ページを裏で準備しておく */
+setTimeout(buildPrint, 1500);
+
 </script>
 </body>
 </html>

@@ -1,0 +1,1234 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>基幹システム 操作マニュアル</title>
+  <style>
+    :root {
+      --bg: #f5f7fb;
+      --card: #ffffff;
+      --text: #1f2937;
+      --muted: #6b7280;
+      --line: #e5e7eb;
+      --accent: #2563eb;
+      --accent-dark: #1d4ed8;
+      --accent-soft: #dbeafe;
+      --ok: #047857;
+      --warn: #b45309;
+      --danger: #b91c1c;
+      --shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
+      color-scheme: light;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", "Hiragino Sans", "Meiryo", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.7;
+    }
+
+    button { font: inherit; cursor: pointer; }
+
+    /* ---------- ヘッダー ---------- */
+    .app-header {
+      background: linear-gradient(135deg, #1d4ed8, #3b82f6);
+      color: #fff;
+      padding: 18px 24px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+    .app-header h1 { margin: 0; font-size: 1.45rem; letter-spacing: 0.04em; }
+    .app-header p { margin: 2px 0 0; opacity: 0.9; font-size: 0.88rem; }
+    .app-header .spacer { flex: 1; }
+
+    .btn {
+      display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+      border: 1px solid transparent; border-radius: 10px;
+      padding: 8px 14px; font-weight: 700; font-size: 0.9rem;
+      background: var(--accent); color: #fff; transition: 0.15s ease;
+    }
+    .btn:hover { background: var(--accent-dark); }
+    .btn.light { background: #fff; color: var(--accent-dark); }
+    .btn.light:hover { background: #eff6ff; }
+    .btn.ghost { background: #fff; color: var(--text); border-color: #d1d5db; }
+    .btn.ghost:hover { background: #f3f4f6; }
+    .btn:disabled { opacity: 0.4; cursor: default; }
+    .btn svg { width: 16px; height: 16px; }
+
+    /* ---------- レイアウト ---------- */
+    .layout {
+      max-width: 1440px;
+      margin: 0 auto;
+      padding: 20px 16px 48px;
+      display: grid;
+      grid-template-columns: 270px minmax(0, 1fr);
+      gap: 20px;
+      align-items: start;
+    }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      box-shadow: var(--shadow);
+    }
+
+    /* ---------- ステップ一覧 ---------- */
+    .steps { padding: 14px; position: sticky; top: 16px; }
+    .steps-head { display: flex; justify-content: space-between; align-items: baseline; padding: 2px 6px 10px; }
+    .steps-head h2 { margin: 0; font-size: 1rem; }
+    .steps-head span { font-size: 0.8rem; color: var(--muted); }
+    .steps-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+    .step-item {
+      width: 100%; display: flex; align-items: center; gap: 10px;
+      text-align: left; background: #fff; border: 1px solid transparent; border-radius: 12px;
+      padding: 9px 10px; color: var(--text); font-size: 0.93rem;
+    }
+    .step-item:hover { background: #f3f6fb; }
+    .step-item.active { background: var(--accent-soft); border-color: #bfdbfe; font-weight: 700; }
+    .step-item .num {
+      flex: none; width: 30px; height: 30px; border-radius: 999px;
+      display: inline-flex; align-items: center; justify-content: center;
+      background: #eef2f7; color: #475569; font-weight: 700; font-size: 0.85rem;
+    }
+    .step-item.active .num { background: var(--accent); color: #fff; }
+    .step-item .t { flex: 1; line-height: 1.35; }
+    .step-item .done { flex: none; color: var(--ok); font-size: 0.8rem; visibility: hidden; }
+    .step-item.visited .done { visibility: visible; }
+
+    /* ---------- プレーヤー ---------- */
+    .content { display: grid; grid-template-columns: minmax(0, 1fr); gap: 18px; min-width: 0; }
+    .player { padding: 14px; }
+    .browser { border: 1px solid #cfd6e1; border-radius: 12px; overflow: hidden; background: #fff; }
+    .browser-bar {
+      height: 34px; background: #eef1f5; border-bottom: 1px solid #d8dee8;
+      display: flex; align-items: center; gap: 6px; padding: 0 12px;
+    }
+    .browser-bar i { width: 10px; height: 10px; border-radius: 50%; background: #cbd5e1; display: inline-block; }
+    .browser-bar i:nth-child(1) { background: #f87171; }
+    .browser-bar i:nth-child(2) { background: #fbbf24; }
+    .browser-bar i:nth-child(3) { background: #34d399; }
+    .url {
+      margin-left: 10px; flex: 1; height: 22px; border-radius: 999px; background: #fff;
+      border: 1px solid #d8dee8; font-size: 12px; color: #64748b; padding: 0 12px;
+      display: block; line-height: 20px; min-width: 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis;
+    }
+    .stage { position: relative; width: 100%; aspect-ratio: 960 / 600; overflow: hidden; background: #fff; }
+
+    .controls { display: flex; align-items: center; gap: 10px; padding: 12px 2px 2px; flex-wrap: wrap; }
+    .progress { flex: 1; min-width: 120px; height: 6px; background: #e5e7eb; border-radius: 999px; overflow: hidden; }
+    .progress > div { height: 100%; width: 0; background: var(--accent); transition: width 0.25s ease; }
+    .speed { display: inline-flex; border: 1px solid #d1d5db; border-radius: 10px; overflow: hidden; }
+    .speed button { border: 0; background: #fff; padding: 6px 9px; font-size: 0.8rem; color: var(--muted); }
+    .speed button.on { background: var(--accent-soft); color: var(--accent-dark); font-weight: 700; }
+    .loop { display: inline-flex; align-items: center; gap: 5px; font-size: 0.82rem; color: var(--muted); }
+    .counter { font-size: 0.85rem; color: var(--muted); font-variant-numeric: tabular-nums; }
+
+    /* ---------- 説明文 ---------- */
+    .desc { padding: 20px 22px; }
+    .desc-head { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 8px; }
+    .badge {
+      display: inline-flex; align-items: center; justify-content: center;
+      height: 28px; padding: 0 12px; border-radius: 999px;
+      background: var(--accent-soft); color: var(--accent-dark); font-weight: 700; font-size: 0.85rem;
+    }
+    .desc-head h2 { margin: 0; font-size: 1.3rem; flex: 1; }
+    .d-purpose { margin: 0 0 14px; }
+    .d-cols { display: grid; grid-template-columns: 1.4fr 1fr; gap: 18px; }
+    .d-cols h3 { margin: 0 0 6px; font-size: 0.95rem; }
+    .d-cols ol, .d-cols ul { margin: 0; padding-left: 1.4em; }
+    .d-cols li { margin-bottom: 4px; }
+    .d-notes { background: #fffbeb; border: 1px solid #fde68a; border-radius: 12px; padding: 12px 14px; }
+    .d-notes h3 { color: var(--warn); }
+    .nav-row { display: flex; justify-content: space-between; margin-top: 16px; gap: 10px; }
+
+    #print-root { position: fixed; left: -20000px; top: 0; width: 720px; }
+
+    /* ---------- スマホ ---------- */
+    @media (max-width: 900px) {
+      .layout { grid-template-columns: minmax(0, 1fr); padding: 12px 16px 40px; gap: 14px; }
+      .steps { position: static; padding: 10px; min-width: 0; }
+      .steps-head { padding-bottom: 6px; }
+      .steps-list { display: flex; overflow-x: auto; gap: 6px; padding-bottom: 4px; }
+      .step-item { width: auto; white-space: nowrap; padding: 6px 10px; }
+      .step-item .done { display: none; }
+      .d-cols { grid-template-columns: minmax(0, 1fr); }
+      .app-header { padding: 14px 16px; }
+      .app-header h1 { font-size: 1.2rem; }
+      .desc { padding: 16px; }
+      .desc-head h2 { flex-basis: 100%; order: -1; }
+    }
+
+    /* =========================================================
+       模擬画面（基幹システム風）：960x600 の論理キャンバスを拡大縮小
+       ========================================================= */
+    .cv {
+      position: absolute; left: 0; top: 0; width: 960px; height: 600px;
+      transform-origin: 0 0; overflow: hidden; background: #fff;
+      font-size: 13px; line-height: 1.5; color: #1e293b;
+      pointer-events: none; user-select: none;
+      font-family: "Hiragino Sans", "Meiryo", system-ui, sans-serif;
+    }
+    .cv .scr { position: absolute; inset: 0; transition: opacity 0.18s ease; }
+    .cv .scr.fade { opacity: 0; }
+    .cv .fx { position: absolute; inset: 0; z-index: 5; }
+    .is-hidden { display: none !important; }
+
+    .sys-shell { display: flex; flex-direction: column; height: 100%; }
+    .sys-top { height: 46px; flex: none; background: #1e3a5f; color: #fff; display: flex; align-items: center; padding: 0 16px; gap: 14px; }
+    .sys-logo { font-weight: 700; letter-spacing: 0.06em; font-size: 15px; }
+    .sys-user { margin-left: auto; font-size: 12px; opacity: 0.92; padding: 2px 6px; }
+    .sys-logout { height: 26px; padding: 0 12px; border: 1px solid rgba(255,255,255,0.6); border-radius: 3px; font-size: 12px; display: flex; align-items: center; }
+    .sys-body { flex: 1; display: flex; min-height: 0; }
+    .sys-nav { width: 168px; flex: none; background: #eef2f7; border-right: 1px solid #d5dce6; padding: 10px 0; }
+    .sys-nav div { padding: 9px 16px; font-size: 13px; color: #334155; }
+    .sys-nav .on { background: #dbe6f5; color: #1e3a5f; font-weight: 700; border-left: 4px solid #1e3a5f; padding-left: 12px; }
+    .sys-main { flex: 1; padding: 12px 22px; position: relative; min-width: 0; }
+    .sys-crumb { font-size: 11px; color: #64748b; }
+    .sys-h { font-size: 18px; margin: 2px 0 12px; padding-bottom: 6px; border-bottom: 2px solid #1e3a5f; color: #1e3a5f; display: flex; align-items: center; }
+    .sys-h .acts { margin-left: auto; display: flex; gap: 8px; }
+
+    .cv input, .cv select {
+      font: inherit; font-size: 13px; border: 1px solid #9aa8ba; border-radius: 3px;
+      padding: 4px 8px; background: #fff; width: 100%; height: 30px; color: #0f172a; margin: 0;
+    }
+    .cv .ro { background: #f8fafc; border-color: #e2e8f0; }
+    .cv .is-focus { outline: 2px solid #f59e0b; background: #fffbeb; }
+    .f-grid { display: grid; grid-template-columns: 112px 1fr 112px 1fr; gap: 8px 10px; align-items: center; }
+    .f-label { background: #f1f5f9; border: 1px solid #d5dce6; padding: 4px 8px; font-size: 12px; font-weight: 600; height: 30px; display: flex; align-items: center; }
+    .f-val { padding: 4px 2px; }
+    .sbtn {
+      display: inline-flex; align-items: center; justify-content: center; height: 32px; padding: 0 18px;
+      border-radius: 3px; border: 1px solid #1e3a5f; background: #1e3a5f; color: #fff; font-size: 13px; font-weight: 600;
+      transition: transform 0.1s, filter 0.1s;
+    }
+    .sbtn.sub { background: #fff; color: #1e3a5f; }
+    .sbtn.ok { background: #047857; border-color: #047857; }
+    .btn-row { display: flex; gap: 8px; justify-content: flex-end; margin: 12px 0; }
+    .is-pressed { transform: scale(0.95); filter: brightness(0.85); }
+    table.st { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+    .st th { background: #e2e8f0; border: 1px solid #cbd5e1; padding: 5px 8px; text-align: left; font-weight: 600; }
+    .st td { border: 1px solid #e2e8f0; padding: 6px 8px; }
+    .st td.r, .st th.r { text-align: right; }
+    .st tr.is-pressed, .st tr.sel td { background: #fef3c7; }
+    .st tr.is-pressed { transform: none; }
+    .sec-h { font-weight: 700; color: #1e3a5f; margin: 14px 0 6px; font-size: 13px; border-left: 4px solid #1e3a5f; padding-left: 8px; }
+    .empty { border: 1px dashed #cbd5e1; color: #94a3b8; text-align: center; padding: 40px 0; margin-top: 10px; }
+    .muted { color: #64748b; font-size: 12px; }
+
+    /* ログイン */
+    .sys-login { height: 100%; background: linear-gradient(160deg, #1e3a5f, #345b8c); display: flex; align-items: center; justify-content: center; }
+    .login-box { width: 360px; background: #fff; border-radius: 6px; padding: 26px 30px; box-shadow: 0 12px 30px rgba(0,0,0,0.25); }
+    .login-logo { font-size: 20px; font-weight: 700; color: #1e3a5f; text-align: center; letter-spacing: 0.08em; }
+    .login-sub { text-align: center; color: #64748b; font-size: 12px; margin: 4px 0 16px; }
+    .login-box label { display: block; font-size: 12px; font-weight: 600; margin: 10px 0 4px; }
+    .login-box .sbtn { width: 100%; margin-top: 18px; height: 36px; }
+    .login-foot { margin-top: 14px; font-size: 11px; color: #94a3b8; text-align: center; }
+
+    /* メニュー */
+    .tiles { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+    .tile { border: 1px solid #cbd5e1; border-radius: 6px; padding: 14px; display: flex; gap: 12px; align-items: center; background: #fff; transition: transform 0.1s, filter 0.1s; }
+    .tile .ic { width: 42px; height: 42px; border-radius: 8px; color: #fff; font-weight: 700; font-size: 18px; display: flex; align-items: center; justify-content: center; flex: none; }
+    .tile b { display: block; font-size: 14px; color: #1e3a5f; }
+    .tile span { font-size: 11.5px; color: #64748b; }
+    .notice { margin-top: 16px; border: 1px solid #cbd5e1; border-radius: 6px; }
+    .notice-h { background: #f1f5f9; padding: 6px 12px; font-weight: 700; color: #1e3a5f; border-bottom: 1px solid #cbd5e1; }
+    .notice ul { margin: 0; padding: 6px 12px; list-style: none; }
+    .notice li { padding: 4px 0; border-bottom: 1px dotted #e2e8f0; font-size: 12.5px; }
+    .notice li:last-child { border-bottom: 0; }
+    .notice li span { color: #64748b; margin-right: 10px; }
+
+    /* 受注・完了・帳票 */
+    .cust-box { border: 1px solid #cbd5e1; background: #f8fafc; border-radius: 4px; padding: 8px 12px; display: flex; gap: 24px; }
+    .entry { display: grid; grid-template-columns: 1fr 90px auto; gap: 8px; align-items: end; margin-top: 6px; }
+    .entry label { font-size: 12px; font-weight: 600; display: block; margin-bottom: 3px; }
+    .totals { margin-left: auto; width: 260px; margin-top: 8px; }
+    .totals div { display: flex; justify-content: space-between; padding: 3px 8px; border-bottom: 1px solid #e2e8f0; }
+    .totals .grand { font-weight: 700; font-size: 15px; color: #1e3a5f; background: #eef2f7; }
+    .done-wrap { text-align: center; padding-top: 30px; }
+    .done-ic { width: 64px; height: 64px; border-radius: 50%; background: #047857; color: #fff; font-size: 34px; display: inline-flex; align-items: center; justify-content: center; }
+    .done-wrap h3 { color: #047857; font-size: 20px; margin: 10px 0 4px; }
+    .slip { display: inline-block; margin: 16px auto; border: 2px solid #1e3a5f; border-radius: 6px; padding: 10px 26px; }
+    .slip small { display: block; color: #64748b; }
+    .slip b { font-size: 24px; letter-spacing: 0.06em; color: #1e3a5f; }
+    .preview { margin-top: 12px; border: 1px solid #cbd5e1; background: #e2e8f0; padding: 12px; display: flex; justify-content: center; }
+    .paper { width: 420px; background: #fff; box-shadow: 0 2px 8px rgba(0,0,0,0.15); padding: 14px 18px; font-size: 11px; }
+    .paper h4 { margin: 0 0 6px; text-align: center; letter-spacing: 0.4em; font-size: 15px; }
+    .paper .st { font-size: 10.5px; }
+    .paper .st td, .paper .st th { padding: 2px 5px; }
+
+    /* モーダル */
+    .sys-modal { position: absolute; inset: 0; background: rgba(15,23,42,0.4); display: flex; align-items: center; justify-content: center; z-index: 3; }
+    .sys-dialog { width: 380px; background: #fff; border-radius: 6px; overflow: hidden; box-shadow: 0 12px 30px rgba(0,0,0,0.3); }
+    .sys-dialog .dh { background: #1e3a5f; color: #fff; padding: 8px 14px; font-weight: 700; }
+    .sys-dialog .db { padding: 18px 16px; }
+    .sys-dialog .btn-row { margin: 0; padding: 0 16px 14px; }
+
+    /* 演出レイヤー */
+    .cursor { position: absolute; left: 0; top: 0; z-index: 20; width: 26px; height: 26px; will-change: transform; }
+    .cursor svg { width: 26px; height: 26px; display: block; filter: drop-shadow(0 2px 2px rgba(0,0,0,0.35)); }
+    .cursor.mark::before {
+      content: ""; position: absolute; left: -22px; top: -22px; width: 44px; height: 44px;
+      border: 3px solid #ef4444; border-radius: 50%;
+    }
+    .ripple {
+      position: absolute; width: 14px; height: 14px; margin: -7px 0 0 -7px; border-radius: 50%;
+      border: 3px solid #f59e0b; animation: ripple 0.55s ease-out forwards; z-index: 19;
+    }
+    @keyframes ripple { to { transform: scale(3.6); opacity: 0; } }
+    .hl {
+      position: absolute; z-index: 6; border: 3px solid #ef4444; border-radius: 6px;
+      box-shadow: 0 0 0 2000px rgba(15, 23, 42, 0.28);
+      transition: left 0.25s, top 0.25s, width 0.25s, height 0.25s;
+      animation: pulse 1.2s ease-in-out infinite;
+    }
+    @keyframes pulse { 50% { border-color: #f97316; } }
+    .cap {
+      position: absolute; z-index: 15; left: 50%; bottom: 20px; transform: translateX(-50%);
+      max-width: 82%; background: rgba(17, 24, 39, 0.9); color: #fff;
+      padding: 10px 22px; border-radius: 999px; font-size: 17px; font-weight: 700; text-align: center; white-space: nowrap;
+    }
+    .cap.pop { animation: pop 0.25s ease-out; }
+    @keyframes pop { from { opacity: 0; transform: translateX(-50%) translateY(8px); } }
+    .toast {
+      position: absolute; z-index: 14; right: 18px; top: 58px; background: #047857; color: #fff;
+      padding: 9px 16px; border-radius: 6px; font-weight: 700; box-shadow: 0 6px 16px rgba(0,0,0,0.2);
+    }
+    .fdd { position: absolute; background: #fff; border: 1px solid #64748b; box-shadow: 0 6px 14px rgba(0,0,0,0.2); z-index: 7; }
+    .fdd div { padding: 4px 8px; font-size: 13px; height: 28px; display: flex; align-items: center; }
+    .fdd .cur { background: #f1f5f9; }
+    .fdd .on { background: #2563eb; color: #fff; }
+
+    @media (prefers-reduced-motion: reduce) {
+      .hl, .cap.pop, .ripple { animation: none; }
+    }
+
+    /* =========================================================
+       印刷
+       ========================================================= */
+    @page { size: A4 portrait; margin: 12mm; }
+    @media print {
+      body { background: #fff; }
+      .app-header, .layout { display: none !important; }
+      #print-root { position: static; width: auto; left: auto; }
+      .p-step, .p-cover { break-after: page; page-break-after: always; }
+      .p-step:last-child, .p-cover:last-child { break-after: auto; page-break-after: auto; }
+      * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    }
+    .p-cover { padding-top: 40px; }
+    .p-cover h1 { font-size: 26px; margin: 0 0 4px; }
+    .p-cover .sub { color: var(--muted); margin-bottom: 30px; }
+    .p-cover ol { font-size: 15px; line-height: 2; }
+    .p-head { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; border-bottom: 2px solid var(--accent); padding-bottom: 6px; }
+    .p-head h2 { margin: 0; font-size: 20px; }
+    .p-screen { position: relative; overflow: hidden; border: 1px solid #cbd5e1; border-radius: 6px; margin-bottom: 14px; }
+    .p-desc { font-size: 13.5px; }
+    .p-desc .d-cols { grid-template-columns: 1.3fr 1fr; }
+  </style>
+</head>
+<body>
+  <header class="app-header">
+    <div>
+      <h1>基幹システム 操作マニュアル</h1>
+      <p>左のステップを選ぶと、操作の流れが画面上で再生されます。</p>
+    </div>
+    <div class="spacer"></div>
+    <button class="btn light" id="print-all" type="button">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9V3h12v6M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><path d="M6 14h12v7H6z"/></svg>
+      全ステップを印刷
+    </button>
+  </header>
+
+  <div class="layout">
+    <aside class="card steps" aria-label="ステップ一覧">
+      <div class="steps-head"><h2>ステップ</h2><span id="visited-count"></span></div>
+      <ol class="steps-list" id="steps-list"></ol>
+    </aside>
+
+    <main class="content">
+      <section class="card player" aria-label="操作の再生">
+        <div class="browser">
+          <div class="browser-bar"><i></i><i></i><i></i><div class="url" id="url"></div></div>
+          <div class="stage" id="stage"></div>
+        </div>
+        <div class="controls">
+          <button class="btn" id="btn-play" type="button" style="min-width:104px"></button>
+          <button class="btn ghost" id="btn-restart" type="button" title="最初から再生">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg>最初から
+          </button>
+          <div class="progress" aria-hidden="true"><div id="progress"></div></div>
+          <div class="speed" id="speed" role="group" aria-label="再生速度"></div>
+          <label class="loop"><input type="checkbox" id="loop" checked /> 繰り返し</label>
+        </div>
+      </section>
+
+      <section class="card desc" aria-live="polite">
+        <div class="desc-head">
+          <span class="badge" id="desc-badge"></span>
+          <h2 id="desc-title"></h2>
+          <button class="btn ghost" id="print-one" type="button">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9V3h12v6M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><path d="M6 14h12v7H6z"/></svg>
+            このステップを印刷
+          </button>
+        </div>
+        <div id="desc-body"></div>
+        <div class="nav-row">
+          <button class="btn ghost" id="btn-prev" type="button">← 前のステップ</button>
+          <span class="counter" id="counter"></span>
+          <button class="btn" id="btn-next" type="button">次のステップ →</button>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <div id="print-root" aria-hidden="true"></div>
+
+<script>
+/* =====================================================================
+   1. マニュアルの中身（ここを書き換えれば内容を差し替えられます）
+   ---------------------------------------------------------------------
+   screen  : 最初に表示する模擬画面（SCREENS のキー）
+   data    : 模擬画面に渡す初期値
+   actions : 再生する操作。どの操作にも caption: '...' を付けると字幕を表示
+     { type:'click',     target:'#id' }               カーソル移動＋クリック
+     { type:'move',      target:'#id' }               カーソル移動のみ
+     { type:'type',      target:'#id', text:'...', clear:true }  文字入力
+     { type:'select',    target:'#id', value:'...' }  プルダウン選択
+     { type:'highlight', target:'#id', ms:1500 }      赤枠で強調
+     { type:'caption',   text:'...' }                 字幕のみ
+     { type:'screen',    name:'menu', data:{} }       画面遷移
+     { type:'reveal',    target:'#id' }               隠れている要素を表示
+     { type:'toast',     text:'...' }                 完了メッセージ
+     { type:'fn',        run: scr => {...} }          任意の画面変更
+     { type:'wait',      ms:800 }                     待機
+   ===================================================================== */
+const STEPS = [
+  {
+    title: 'ログイン',
+    screen: 'login',
+    actions: [
+      { type: 'type', target: '#login-id', text: 'U10234', caption: '社員IDを入力します' },
+      { type: 'type', target: '#login-pw', text: 'password', caption: 'パスワードを入力します' },
+      { type: 'click', target: '#login-btn', caption: '「ログイン」を押します' },
+      { type: 'screen', name: 'menu' },
+      { type: 'caption', text: 'メインメニューが表示されればログイン完了です', ms: 1600 }
+    ],
+    purpose: '基幹システムにログインし、業務を開始します。',
+    steps: [
+      'ブラウザで基幹システムのURLを開きます。',
+      '「社員ID」に自分の社員番号（例：U10234）を入力します。',
+      '「パスワード」を入力します。',
+      '「ログイン」ボタンを押します。'
+    ],
+    points: [
+      'パスワードを5回続けて間違えるとロックされます。解除は情報システム部へ連絡してください。',
+      '共用PCで使った後は必ずログアウトしてください（STEP 10）。'
+    ]
+  },
+  {
+    title: 'メインメニューの見方',
+    screen: 'menu',
+    actions: [
+      { type: 'caption', text: 'ログイン後のメインメニューです', ms: 1200 },
+      { type: 'highlight', target: '#sys-nav', caption: '左側：業務メニュー（どの画面からでも移動できます）', ms: 2000 },
+      { type: 'highlight', target: '#menu-notice', caption: 'お知らせ：メンテナンス予定などを確認', ms: 2000 },
+      { type: 'highlight', target: '#sys-user', caption: '右上：ログイン中の所属・氏名', ms: 1800 },
+      { type: 'click', target: '#tile-customer', caption: '「顧客管理」を押します' },
+      { type: 'screen', name: 'customer-search' },
+      { type: 'caption', text: '顧客検索画面が開きます', ms: 1300 }
+    ],
+    purpose: 'ログイン後に表示されるメインメニューの見方を確認し、目的の業務を選びます。',
+    steps: [
+      '画面左の業務メニュー、または中央のメニューボタンから業務を選びます。',
+      '「お知らせ」欄で、システム停止予定などの連絡事項を確認します。',
+      '今回は「顧客管理」を押して顧客検索画面へ進みます。'
+    ],
+    points: [
+      '画面右上にログイン中の所属と氏名が表示されます。他人の名前になっていないか確認しましょう。'
+    ]
+  },
+  {
+    title: '顧客検索',
+    screen: 'customer-search',
+    actions: [
+      { type: 'type', target: '#cs-kana', text: 'ヤマダ', caption: '顧客名（カナ）を入力します' },
+      { type: 'select', target: '#cs-branch', value: '東京本店', caption: '担当店舗で絞り込みます' },
+      { type: 'click', target: '#cs-search', caption: '「検索」を押します' },
+      { type: 'screen', name: 'customer-list', data: { kana: 'ヤマダ', branch: '東京本店' } },
+      { type: 'highlight', target: '#cs-result', caption: '条件に合う顧客が一覧表示されます', ms: 1800 }
+    ],
+    purpose: '受注を登録する顧客を検索します。',
+    steps: [
+      '「顧客名（カナ）」に名前の一部を入力します（例：ヤマダ）。',
+      '必要に応じて「担当店舗」を選んで絞り込みます。',
+      '「検索」ボタンを押すと、条件に合う顧客が一覧表示されます。'
+    ],
+    points: [
+      'カナは全角・半角どちらでも検索できます。',
+      '電話番号はハイフンなしでも検索できます。'
+    ]
+  },
+  {
+    title: '検索結果から顧客を選択',
+    screen: 'customer-list',
+    data: { kana: 'ヤマダ', branch: '東京本店' },
+    actions: [
+      { type: 'highlight', target: '#cs-result', caption: '一覧から対象の顧客を探します', ms: 1600 },
+      { type: 'highlight', target: '#row-2', caption: '住所・電話番号まで確認します', ms: 1800 },
+      { type: 'click', target: '#row-2', caption: '対象の行をクリックします' },
+      { type: 'screen', name: 'customer-detail' },
+      { type: 'caption', text: '顧客詳細画面が開きます', ms: 1300 }
+    ],
+    purpose: '一覧から対象の顧客を特定し、顧客詳細画面を開きます。',
+    steps: [
+      '一覧の「顧客コード」「顧客名」「住所」を見て、対象の顧客を確認します。',
+      '対象の行をクリックすると顧客詳細画面が開きます。'
+    ],
+    points: [
+      '同姓同名の顧客がいる場合があります。住所・電話番号まで必ず確認してください。'
+    ]
+  },
+  {
+    title: '顧客情報の確認・編集',
+    screen: 'customer-detail',
+    actions: [
+      { type: 'highlight', target: '#cd-basic', caption: '登録内容が最新か確認します', ms: 1800 },
+      { type: 'click', target: '#cd-edit', caption: '変更がある場合は「編集」を押します' },
+      { type: 'fn', run: scr => setEditing(scr, true) },
+      { type: 'type', target: '#cd-tel', text: '03-5555-0123', clear: true, caption: '変更箇所を入力し直します' },
+      { type: 'click', target: '#cd-save', caption: '「保存」を押します' },
+      { type: 'fn', run: scr => setEditing(scr, false) },
+      { type: 'toast', text: '✓ 顧客情報を保存しました', caption: '保存すると変更が反映されます' }
+    ],
+    purpose: '顧客の登録内容を確認し、変更があれば修正します。',
+    steps: [
+      '基本情報（氏名・住所・電話番号など）が最新か確認します。',
+      '修正する場合は「編集」ボタンを押します。',
+      '変更箇所を入力し直します（例：電話番号）。',
+      '「保存」ボタンを押すと変更が反映されます。'
+    ],
+    points: [
+      '「保存」を押さずに画面を移動すると、変更は破棄されます。',
+      '変更履歴は自動で記録されます。'
+    ]
+  },
+  {
+    title: '新規受注の登録画面を開く',
+    screen: 'customer-detail',
+    data: { tel: '03-5555-0123' },
+    actions: [
+      { type: 'click', target: '#cd-neworder', caption: '「新規受注」を押します' },
+      { type: 'screen', name: 'order-form' },
+      { type: 'highlight', target: '#of-customer', caption: '顧客情報は自動で引き継がれます', ms: 1900 },
+      { type: 'highlight', target: '#of-dates', caption: '受注日（初期値は当日）を確認します', ms: 1800 }
+    ],
+    purpose: '選択中の顧客で新しい受注を作成します。',
+    steps: [
+      '顧客詳細画面の「新規受注」ボタンを押します。',
+      '受注登録画面が開き、顧客情報が引き継がれていることを確認します。',
+      '受注日・納品予定日を確認します。'
+    ],
+    points: [
+      '顧客を間違えて開いた場合は、左メニューの「顧客管理」から検索し直してください。'
+    ]
+  },
+  {
+    title: '商品・数量の入力',
+    screen: 'order-form',
+    actions: [
+      { type: 'select', target: '#of-product', value: 'A-100', caption: '商品を選びます' },
+      { type: 'type', target: '#of-qty', text: '10', caption: '数量を入力します' },
+      { type: 'click', target: '#of-add', caption: '「明細に追加」を押します' },
+      { type: 'fn', run: scr => addLine(scr, 'A-100', 10), ms: 600 },
+      { type: 'select', target: '#of-product', value: 'B-210', caption: '2品目も同じように入力します' },
+      { type: 'type', target: '#of-qty', text: '2' },
+      { type: 'click', target: '#of-add' },
+      { type: 'fn', run: scr => addLine(scr, 'B-210', 2), ms: 600 },
+      { type: 'highlight', target: '#of-total', caption: '金額・消費税・合計は自動計算されます', ms: 1900 }
+    ],
+    purpose: '受注する商品と数量を明細に追加します。',
+    steps: [
+      '「商品」プルダウンから商品を選びます。',
+      '「数量」を入力します。',
+      '「明細に追加」ボタンを押すと、下の明細表に1行追加されます。',
+      '複数の商品がある場合は繰り返します。'
+    ],
+    points: [
+      '金額・消費税・合計は自動計算されます。',
+      '誤って追加した行は、行の右端の「削除」で取り消せます。'
+    ]
+  },
+  {
+    title: '入力内容の確認',
+    screen: 'order-form',
+    data: { lines: [['A-100', 10], ['B-210', 2]] },
+    actions: [
+      { type: 'click', target: '#of-confirm', caption: '「確認画面へ」を押します' },
+      { type: 'screen', name: 'confirm' },
+      { type: 'highlight', target: '#cf-cust', caption: '顧客名を確認します', ms: 1500 },
+      { type: 'highlight', target: '#cf-lines', caption: '商品・数量を確認します', ms: 1600 },
+      { type: 'highlight', target: '#cf-total', caption: '合計金額が見積書と一致しているか確認します', ms: 1900 },
+      { type: 'move', target: '#cf-back', caption: '誤りがあれば「戻る」で修正します' },
+      { type: 'wait', ms: 1200 }
+    ],
+    purpose: '登録の前に、受注内容に誤りがないか確認します。',
+    steps: [
+      '「確認画面へ」ボタンを押します。',
+      '顧客名・商品・数量・合計金額を確認します。',
+      '誤りがあれば「戻る」で入力画面に戻って修正します。'
+    ],
+    points: [
+      '合計金額が見積書と一致しているか確認しましょう。'
+    ]
+  },
+  {
+    title: '登録完了・伝票番号の控え',
+    screen: 'confirm',
+    actions: [
+      { type: 'click', target: '#cf-submit', caption: '「登録する」を押します' },
+      { type: 'reveal', target: '#cf-dialog' },
+      { type: 'click', target: '#cf-ok', caption: '確認メッセージで「OK」を押します' },
+      { type: 'screen', name: 'complete' },
+      { type: 'highlight', target: '#cp-slip', caption: '受注伝票番号を控えておきます', ms: 2200 }
+    ],
+    purpose: '受注を確定し、発行された伝票番号を控えます。',
+    steps: [
+      '確認画面の「登録する」ボタンを押します。',
+      '確認メッセージで「OK」を押します。',
+      '完了画面に表示される「受注伝票番号」を控えます。'
+    ],
+    points: [
+      '伝票番号は問い合わせ・帳票出力・取消のときに必要です。',
+      '「登録する」を2回押さないでください（二重登録の原因になります）。'
+    ]
+  },
+  {
+    title: '帳票出力とログアウト',
+    screen: 'complete',
+    actions: [
+      { type: 'click', target: '#nav-report', caption: '左メニューの「帳票出力」を押します' },
+      { type: 'screen', name: 'report' },
+      { type: 'select', target: '#rp-type', value: '受注伝票', caption: '帳票の種類を選びます' },
+      { type: 'type', target: '#rp-slip', text: 'J-2026-001234', caption: 'STEP 9 で控えた伝票番号を入力します' },
+      { type: 'click', target: '#rp-output', caption: '「出力」を押します' },
+      { type: 'reveal', target: '#rp-preview' },
+      { type: 'caption', text: 'プレビューから印刷・PDF保存ができます', ms: 1800 },
+      { type: 'click', target: '#sys-logout', caption: '作業が終わったら「ログアウト」を押します' },
+      { type: 'screen', name: 'login' },
+      { type: 'toast', text: 'ログアウトしました', caption: 'ログイン画面に戻れば完了です' }
+    ],
+    purpose: '受注伝票を出力し、作業を終えてログアウトします。',
+    steps: [
+      '画面左の「帳票出力」を押します。',
+      '「帳票の種類」で「受注伝票」を選びます。',
+      '「伝票番号」に STEP 9 で控えた番号を入力します。',
+      '「出力」を押すとプレビューが表示され、印刷・PDF保存ができます。',
+      '作業が終わったら、画面右上の「ログアウト」を押します。'
+    ],
+    points: [
+      'ログアウトせずにブラウザを閉じると、一定時間ログイン状態が残ります。必ずログアウトしてください。'
+    ]
+  }
+];
+
+/* =====================================================================
+   2. 模擬画面（基幹システム風）
+   ===================================================================== */
+const PRODUCTS = {
+  'A-100': { name: 'コピー用紙 A4（5箱）', price: 3200 },
+  'B-210': { name: 'トナーカートリッジ 黒', price: 12800 },
+  'C-305': { name: 'ファイルボックス（10個）', price: 2450 },
+  'D-412': { name: 'ホワイトボードマーカー（10本）', price: 1180 }
+};
+const CUSTOMERS = [
+  ['C-100231', '山田 一郎', 'ヤマダ イチロウ', '東京都千代田区丸の内 2-4-1', '03-1111-2222'],
+  ['C-100458', '山田 花子', 'ヤマダ ハナコ', '東京都港区芝公園 1-2-3', '03-1234-5678'],
+  ['C-101092', '山田 健二', 'ヤマダ ケンジ', '東京都新宿区西新宿 6-8-1', '03-3456-7890'],
+  ['C-102377', '山田商事株式会社', 'ヤマダショウジ', '東京都中央区日本橋 3-5-2', '03-6789-0123']
+];
+const yen = n => '¥' + n.toLocaleString('ja-JP');
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+
+const URLS = {
+  'login': '/login', 'menu': '/menu', 'customer-search': '/customer/search',
+  'customer-list': '/customer/search?kana=ヤマダ', 'customer-detail': '/customer/C-100458',
+  'order-form': '/order/new?customer=C-100458', 'confirm': '/order/confirm',
+  'complete': '/order/complete', 'report': '/report'
+};
+
+function shell(active, title, body, extra = '') {
+  const nav = [['nav-menu', 'メインメニュー', 'menu'], ['nav-customer', '顧客管理', 'customer'], ['nav-order', '受注管理', 'order'],
+    ['nav-stock', '在庫照会', 'stock'], ['nav-report', '帳票出力', 'report'], ['nav-master', 'マスタ管理', 'master']]
+    .map(([id, label, key]) => `<div id="${id}" class="${key === active ? 'on' : ''}">${label}</div>`).join('');
+  return `<div class="sys-shell">
+    <div class="sys-top"><div class="sys-logo">■ 基幹業務システム</div>
+      <div class="sys-user" id="sys-user">東京本店 営業部　山本 太郎</div>
+      <div class="sys-logout" id="sys-logout">ログアウト</div></div>
+    <div class="sys-body"><nav class="sys-nav" id="sys-nav">${nav}</nav>
+      <main class="sys-main"><div class="sys-crumb">ホーム ＞ ${title}</div>${body}${extra}</main></div></div>`;
+}
+
+function customerSearch(d = {}) {
+  const branches = ['指定なし', '東京本店', '横浜支店', '大阪支店'];
+  const result = d.results
+    ? `<div class="muted" style="margin:6px 0 4px">検索結果：${CUSTOMERS.length}件</div>
+       <table class="st"><thead><tr><th>顧客コード</th><th>顧客名</th><th>カナ</th><th>住所</th><th>電話番号</th></tr></thead><tbody>
+       ${CUSTOMERS.map((c, i) => `<tr id="row-${i + 1}">${c.map(v => `<td>${v}</td>`).join('')}</tr>`).join('')}</tbody></table>`
+    : `<div class="empty">検索条件を入力して「検索」を押してください</div>`;
+  return shell('customer', '顧客管理 ＞ 顧客検索', `
+    <h2 class="sys-h">顧客検索</h2>
+    <div class="f-grid">
+      <div class="f-label">顧客名（カナ）</div><input id="cs-kana" value="${esc(d.kana || '')}">
+      <div class="f-label">顧客名（漢字）</div><input id="cs-name">
+      <div class="f-label">電話番号</div><input id="cs-tel">
+      <div class="f-label">担当店舗</div><select id="cs-branch">${branches.map(b => `<option${b === d.branch ? ' selected' : ''}>${b}</option>`).join('')}</select>
+    </div>
+    <div class="btn-row"><div class="sbtn sub" id="cs-clear">クリア</div><div class="sbtn" id="cs-search">検索</div></div>
+    <div id="cs-result">${result}</div>`);
+}
+
+function orderLines(lines) {
+  if (!lines.length) return `<tr><td colspan="6" style="text-align:center;color:#94a3b8;padding:18px">明細はまだありません</td></tr>`;
+  return lines.map(([code, qty], i) => {
+    const p = PRODUCTS[code];
+    return `<tr><td>${i + 1}</td><td>${code}</td><td>${p.name}</td><td class="r">${yen(p.price)}</td><td class="r">${qty}</td><td class="r">${yen(p.price * qty)}</td></tr>`;
+  }).join('');
+}
+function totalsHtml(lines) {
+  const sub = lines.reduce((s, [c, q]) => s + PRODUCTS[c].price * q, 0);
+  const tax = Math.floor(sub * 0.1);
+  return `<div><span>小計</span><span>${yen(sub)}</span></div><div><span>消費税（10%）</span><span>${yen(tax)}</span></div><div class="grand"><span>合計</span><span>${yen(sub + tax)}</span></div>`;
+}
+const LINES_HEAD = `<thead><tr><th style="width:36px">No</th><th style="width:80px">商品コード</th><th>商品名</th><th class="r">単価</th><th class="r" style="width:60px">数量</th><th class="r">金額</th></tr></thead>`;
+const ORDER_LINES = [['A-100', 10], ['B-210', 2]];
+
+const SCREENS = {
+  'login': () => `<div class="sys-login"><div class="login-box">
+      <div class="login-logo">基幹業務システム</div>
+      <div class="login-sub">社員IDとパスワードを入力してください</div>
+      <label>社員ID</label><input id="login-id">
+      <label>パスワード</label><input id="login-pw" type="password">
+      <div class="sbtn" id="login-btn">ログイン</div>
+      <div class="login-foot">パスワードを忘れた場合は 情報システム部（内線 1234）へ</div>
+    </div></div>`,
+
+  'menu': () => {
+    const tile = (id, ic, color, t, s) => `<div class="tile" id="${id}"><div class="ic" style="background:${color}">${ic}</div><div><b>${t}</b><span>${s}</span></div></div>`;
+    return shell('menu', 'メインメニュー', `
+      <h2 class="sys-h">メインメニュー</h2>
+      <div class="tiles">
+        ${tile('tile-customer', '顧', '#2563eb', '顧客管理', '顧客の検索・登録・変更')}
+        ${tile('tile-order', '受', '#047857', '受注管理', '受注の登録・照会・取消')}
+        ${tile('tile-stock', '在', '#7c3aed', '在庫照会', '商品別・倉庫別の在庫')}
+        ${tile('tile-report', '帳', '#b45309', '帳票出力', '伝票・日報・請求書')}
+        ${tile('tile-master', 'マ', '#475569', 'マスタ管理', '商品・取引先（管理者）')}
+        ${tile('tile-setting', '設', '#0e7490', '個人設定', 'パスワード変更など')}
+      </div>
+      <div class="notice" id="menu-notice"><div class="notice-h">お知らせ</div><ul>
+        <li><span>2026/11/12</span>11/22（土）9:00〜12:00 システムメンテナンスのため停止します</li>
+        <li><span>2026/11/05</span>帳票出力に「売上日報（PDF）」を追加しました</li>
+        <li><span>2026/10/28</span>年末年始の受注締め日についてのご案内</li>
+      </ul></div>`);
+  },
+
+  'customer-search': d => customerSearch(d),
+  'customer-list': d => customerSearch({ ...d, results: true }),
+
+  'customer-detail': d => shell('customer', '顧客管理 ＞ 顧客詳細', `
+    <h2 class="sys-h">顧客詳細<span class="acts">
+      <div class="sbtn sub" id="cd-edit">編集</div><div class="sbtn is-hidden" id="cd-save">保存</div><div class="sbtn ok" id="cd-neworder">＋ 新規受注</div></span></h2>
+    <div id="cd-basic">
+      <div class="sec-h" style="margin-top:0">基本情報</div>
+      <div class="f-grid">
+        <div class="f-label">顧客コード</div><div class="f-val">C-100458</div>
+        <div class="f-label">担当店舗</div><div class="f-val">東京本店（担当：山本 太郎）</div>
+        <div class="f-label">顧客名</div><input class="ro ed" value="山田 花子">
+        <div class="f-label">カナ</div><input class="ro ed" value="ヤマダ ハナコ">
+        <div class="f-label">住所</div><input class="ro ed" value="東京都港区芝公園 1-2-3">
+        <div class="f-label">電話番号</div><input class="ro ed" id="cd-tel" value="${esc(d.tel || '03-1234-5678')}">
+        <div class="f-label">メール</div><input class="ro ed" value="hanako.yamada@example.com">
+        <div class="f-label">生年月日</div><div class="f-val">1985/04/12</div>
+      </div>
+    </div>
+    <div class="sec-h">取引履歴（直近3件）</div>
+    <table class="st"><thead><tr><th>受注日</th><th>伝票番号</th><th>内容</th><th class="r">金額</th><th>状態</th></tr></thead><tbody>
+      <tr><td>2026/10/21</td><td>J-2026-001102</td><td>コピー用紙 A4（5箱）ほか</td><td class="r">¥18,920</td><td>納品済</td></tr>
+      <tr><td>2026/09/08</td><td>J-2026-000874</td><td>ファイルボックス（10個）</td><td class="r">¥5,390</td><td>納品済</td></tr>
+      <tr><td>2026/07/30</td><td>J-2026-000611</td><td>トナーカートリッジ 黒</td><td class="r">¥28,160</td><td>納品済</td></tr>
+    </tbody></table>`),
+
+  'order-form': d => {
+    const lines = d.lines || [];
+    return shell('order', '受注管理 ＞ 受注登録', `
+      <h2 class="sys-h">受注登録</h2>
+      <div class="cust-box" id="of-customer"><div><span class="muted">顧客</span><br><b>C-100458　山田 花子 様</b></div><div><span class="muted">住所</span><br>東京都港区芝公園 1-2-3</div><div><span class="muted">電話</span><br>03-5555-0123</div></div>
+      <div class="f-grid" id="of-dates" style="margin-top:8px">
+        <div class="f-label">受注日</div><input id="of-date" value="2026/11/14">
+        <div class="f-label">納品予定日</div><input id="of-due" value="2026/11/18">
+      </div>
+      <div class="entry">
+        <div><label>商品</label><select id="of-product"><option value="">選択してください</option>${Object.entries(PRODUCTS).map(([c, p]) => `<option value="${c}">${c}　${p.name}　${yen(p.price)}</option>`).join('')}</select></div>
+        <div><label>数量</label><input id="of-qty"></div>
+        <div class="sbtn sub" id="of-add">明細に追加</div>
+      </div>
+      <div style="margin-top:10px"><table class="st" id="of-lines-wrap">${LINES_HEAD}<tbody id="of-lines" data-lines='${JSON.stringify(lines)}'>${orderLines(lines)}</tbody></table></div>
+      <div style="display:flex;align-items:flex-end;gap:12px">
+        <div class="btn-row" style="margin:0"><div class="sbtn sub" id="of-cancel">戻る</div><div class="sbtn" id="of-confirm">確認画面へ</div></div>
+        <div class="totals" id="of-total">${totalsHtml(lines)}</div>
+      </div>`);
+  },
+
+  'confirm': () => shell('order', '受注管理 ＞ 受注登録 ＞ 確認', `
+      <h2 class="sys-h">受注内容の確認</h2>
+      <div class="muted" style="margin-bottom:6px">以下の内容で登録します。内容をご確認ください。</div>
+      <div class="cust-box" id="cf-cust"><div><span class="muted">顧客</span><br><b>C-100458　山田 花子 様</b></div><div><span class="muted">受注日</span><br>2026/11/14</div><div><span class="muted">納品予定日</span><br>2026/11/18</div></div>
+      <div style="margin-top:10px"><table class="st" id="cf-lines">${LINES_HEAD}<tbody>${orderLines(ORDER_LINES)}</tbody></table></div>
+      <div style="display:flex;align-items:flex-end;gap:12px">
+        <div class="btn-row" style="margin:0"><div class="sbtn sub" id="cf-back">戻る</div><div class="sbtn ok" id="cf-submit">登録する</div></div>
+        <div class="totals" id="cf-total">${totalsHtml(ORDER_LINES)}</div>
+      </div>`,
+    `<div class="sys-modal is-hidden" id="cf-dialog"><div class="sys-dialog"><div class="dh">確認</div>
+      <div class="db">この内容で受注を登録します。よろしいですか？</div>
+      <div class="btn-row"><div class="sbtn sub" id="cf-cancel">キャンセル</div><div class="sbtn" id="cf-ok">OK</div></div></div></div>`),
+
+  'complete': () => shell('order', '受注管理 ＞ 受注登録 ＞ 完了', `
+      <h2 class="sys-h">受注登録 完了</h2>
+      <div class="done-wrap">
+        <div class="done-ic">✓</div>
+        <h3>受注の登録が完了しました</h3>
+        <div class="muted">山田 花子 様　合計 ${yen(63360)}（税込）</div>
+        <div class="slip" id="cp-slip"><small>受注伝票番号</small><b>J-2026-001234</b></div>
+        <div class="btn-row" style="justify-content:center"><div class="sbtn sub" id="cp-menu">メインメニューへ</div><div class="sbtn sub" id="cp-order">続けて受注登録</div><div class="sbtn" id="cp-print">受注伝票を出力</div></div>
+      </div>`),
+
+  'report': () => shell('report', '帳票出力', `
+      <h2 class="sys-h">帳票出力</h2>
+      <div class="f-grid">
+        <div class="f-label">帳票の種類</div><select id="rp-type"><option>選択してください</option><option>受注伝票</option><option>納品書</option><option>請求書</option><option>売上日報</option></select>
+        <div class="f-label">伝票番号</div><input id="rp-slip">
+        <div class="f-label">出力形式</div><div class="f-val">◉ PDF　○ 直接印刷</div>
+        <div></div><div style="text-align:right"><div class="sbtn" id="rp-output">出力</div></div>
+      </div>
+      <div class="preview is-hidden" id="rp-preview"><div class="paper">
+        <h4>受注伝票</h4>
+        <div style="display:flex;justify-content:space-between;margin-bottom:6px"><span>山田 花子 様</span><span>No. J-2026-001234<br>2026/11/14</span></div>
+        <table class="st"><thead><tr><th>商品名</th><th class="r">数量</th><th class="r">金額</th></tr></thead><tbody>
+          <tr><td>コピー用紙 A4（5箱）</td><td class="r">10</td><td class="r">¥32,000</td></tr>
+          <tr><td>トナーカートリッジ 黒</td><td class="r">2</td><td class="r">¥25,600</td></tr>
+          <tr><td colspan="2" class="r"><b>合計（税込）</b></td><td class="r"><b>¥63,360</b></td></tr></tbody></table>
+      </div></div>`)
+};
+
+/* 画面内の小さな処理（fn アクションから呼ぶ） */
+function setEditing(scr, on) {
+  scr.querySelectorAll('.ed').forEach(e => e.classList.toggle('ro', !on));
+  scr.querySelector('#cd-edit').classList.toggle('is-hidden', on);
+  scr.querySelector('#cd-save').classList.toggle('is-hidden', !on);
+  if (!on) scr.querySelectorAll('.is-focus').forEach(e => e.classList.remove('is-focus'));
+}
+function addLine(scr, code, qty) {
+  const tb = scr.querySelector('#of-lines');
+  const lines = JSON.parse(tb.dataset.lines || '[]');
+  lines.push([code, qty]);
+  tb.dataset.lines = JSON.stringify(lines);
+  tb.innerHTML = orderLines(lines);
+  scr.querySelector('#of-total').innerHTML = totalsHtml(lines);
+  scr.querySelector('#of-product').selectedIndex = 0;
+  scr.querySelector('#of-qty').value = '';
+  scr.querySelectorAll('.is-focus').forEach(e => e.classList.remove('is-focus'));
+}
+
+/* =====================================================================
+   3. 再生エンジン
+   ===================================================================== */
+const W = 960, H = 600;
+const CANCEL = Symbol('cancel');
+const CURSOR_SVG = '<svg viewBox="0 0 24 24"><path d="M4 2 L4 19 L8.5 15 L11.5 22 L14.5 20.7 L11.6 14 L17.5 14 Z" fill="#111" stroke="#fff" stroke-width="1.5" stroke-linejoin="round"/></svg>';
+const ease = p => p < 0.5 ? 4 * p * p * p : 1 - Math.pow(-2 * p + 2, 3) / 2;
+
+class Runner {
+  constructor() { this.paused = false; this.cancelled = false; }
+  async frame() {
+    await new Promise(r => requestAnimationFrame(() => r()));
+    while (this.paused && !this.cancelled) await new Promise(r => setTimeout(r, 60));
+    if (this.cancelled) throw CANCEL;
+  }
+  async tween(ms, fn) {
+    let t = 0, last = performance.now();
+    fn(0);
+    while (t < ms) {
+      await this.frame();
+      const now = performance.now();
+      t += Math.min(now - last, 50) * state.speed;
+      last = now;
+      fn(Math.min(t / ms, 1));
+    }
+  }
+  sleep(ms) { return this.tween(ms, () => {}); }
+}
+
+function makeCanvas() {
+  const cv = document.createElement('div');
+  cv.className = 'cv';
+  cv.innerHTML = `<div class="scr"></div><div class="fx"></div><div class="hl is-hidden"></div>
+    <div class="toast is-hidden"></div><div class="cap is-hidden"></div><div class="cursor">${CURSOR_SVG}</div>`;
+  return cv;
+}
+function makeCtx(cv, runner) {
+  const $c = s => cv.querySelector(s);
+  return { cv, scr: $c('.scr'), fx: $c('.fx'), hl: $c('.hl'), toast: $c('.toast'), cap: $c('.cap'), cursor: $c('.cursor'),
+    pos: { x: 700, y: 470 }, runner, instant: !runner, moved: false, onScreen: null };
+}
+const sleep = (ctx, ms) => ctx.instant ? Promise.resolve() : ctx.runner.sleep(ms);
+
+function setScreen(ctx, name, data) {
+  ctx.scr.innerHTML = SCREENS[name](data || {});
+  ctx.fx.innerHTML = '';
+  ctx.hl.classList.add('is-hidden');
+  if (ctx.onScreen) ctx.onScreen(name);
+}
+function resetCanvas(ctx, step) {
+  setScreen(ctx, step.screen, step.data);
+  ctx.cap.classList.add('is-hidden');
+  ctx.toast.classList.add('is-hidden');
+  ctx.cursor.classList.remove('mark');
+  ctx.moved = false;
+  placeCursor(ctx, 700, 470);
+}
+function placeCursor(ctx, x, y) {
+  ctx.pos = { x, y };
+  ctx.cursor.style.transform = `translate(${x - 4}px, ${y - 2}px)`;
+}
+function q(ctx, sel) {
+  if (typeof sel !== 'string') return sel;
+  const el = ctx.scr.querySelector(sel);
+  if (!el) console.warn('対象が見つかりません:', sel);
+  return el;
+}
+function box(ctx, el) {
+  const c = ctx.cv.getBoundingClientRect(), r = el.getBoundingClientRect();
+  const s = c.width / W || 1;
+  return { left: (r.left - c.left) / s, top: (r.top - c.top) / s, w: r.width / s, h: r.height / s };
+}
+function setCaption(ctx, text) {
+  if (!text) { ctx.cap.classList.add('is-hidden'); return; }
+  ctx.cap.textContent = text;
+  ctx.cap.classList.remove('is-hidden', 'pop');
+  if (!ctx.instant) { void ctx.cap.offsetWidth; ctx.cap.classList.add('pop'); }
+}
+function setFocus(ctx, el) {
+  ctx.scr.querySelectorAll('.is-focus').forEach(e => e.classList.remove('is-focus'));
+  if (el && el.matches('input, select')) el.classList.add('is-focus');
+}
+function ripple(ctx) {
+  const r = document.createElement('div');
+  r.className = 'ripple';
+  r.style.left = ctx.pos.x + 'px';
+  r.style.top = ctx.pos.y + 'px';
+  ctx.fx.appendChild(r);
+  setTimeout(() => r.remove(), 700);
+}
+
+const ACT = {
+  async move(ctx, a) {
+    const el = q(ctx, a.target); if (!el) return;
+    const b = box(ctx, el);
+    const tx = b.left + Math.min(b.w * 0.5, 60), ty = b.top + b.h * 0.55;
+    ctx.moved = true;
+    if (ctx.instant) return placeCursor(ctx, tx, ty);
+    const sx = ctx.pos.x, sy = ctx.pos.y;
+    const ms = Math.max(350, Math.min(950, Math.hypot(tx - sx, ty - sy) * 1.3));
+    await ctx.runner.tween(ms, p => { const e = ease(p); placeCursor(ctx, sx + (tx - sx) * e, sy + (ty - sy) * e); });
+    await sleep(ctx, 120);
+  },
+  async click(ctx, a) {
+    await ACT.move(ctx, a);
+    const el = q(ctx, a.target);
+    if (!ctx.instant) {
+      ripple(ctx);
+      if (el) el.classList.add('is-pressed');
+      await sleep(ctx, 170);
+      if (el) el.classList.remove('is-pressed');
+    }
+    if (el) { setFocus(ctx, el); if (el.matches('tr')) el.classList.add('sel'); }
+    await sleep(ctx, a.after ?? 280);
+  },
+  async type(ctx, a) {
+    await ACT.click(ctx, { target: a.target, after: 120 });
+    const el = q(ctx, a.target); if (!el) return;
+    if (a.clear) {
+      if (ctx.instant) el.value = '';
+      while (el.value) { el.value = el.value.slice(0, -1); await sleep(ctx, 30); }
+    }
+    if (ctx.instant) { el.value += a.text; return; }
+    for (const ch of a.text) { el.value += ch; await sleep(ctx, a.charMs || 90); }
+    await sleep(ctx, 300);
+  },
+  async select(ctx, a) {
+    const el = q(ctx, a.target); if (!el) return;
+    const opts = [...el.options];
+    const idx = Math.max(0, opts.findIndex(o => o.value === a.value || o.text === a.value));
+    if (ctx.instant) { el.selectedIndex = idx; setFocus(ctx, el); ctx.moved = true; return ACT.move(ctx, a); }
+    await ACT.click(ctx, { target: el, after: 100 });
+    const b = box(ctx, el);
+    const dd = document.createElement('div');
+    dd.className = 'fdd';
+    Object.assign(dd.style, { left: b.left + 'px', top: b.top + b.h + 'px', width: b.w + 'px' });
+    dd.innerHTML = opts.map((o, i) => `<div class="${i === el.selectedIndex ? 'cur' : ''}">${esc(o.text)}</div>`).join('');
+    ctx.fx.appendChild(dd);
+    await sleep(ctx, 350);
+    const opt = dd.children[idx];
+    await ACT.move(ctx, { target: opt });
+    opt.classList.add('on');
+    await sleep(ctx, 200);
+    ripple(ctx);
+    await sleep(ctx, 150);
+    el.selectedIndex = idx;
+    dd.remove();
+    await sleep(ctx, 350);
+  },
+  async highlight(ctx, a) {
+    const el = q(ctx, a.target); if (!el) return;
+    const b = box(ctx, el), p = a.pad ?? 5;
+    Object.assign(ctx.hl.style, { left: b.left - p + 'px', top: b.top - p + 'px', width: b.w + p * 2 + 'px', height: b.h + p * 2 + 'px' });
+    ctx.hl.classList.remove('is-hidden');
+    if (ctx.instant) return;
+    await sleep(ctx, a.ms ?? 1500);
+    if (!a.keep) ctx.hl.classList.add('is-hidden');
+  },
+  async caption(ctx, a) { setCaption(ctx, a.text); await sleep(ctx, a.ms ?? 1100); },
+  async screen(ctx, a) {
+    if (ctx.instant) return setScreen(ctx, a.name, a.data);
+    ctx.scr.classList.add('fade');
+    await sleep(ctx, 200);
+    setScreen(ctx, a.name, a.data);
+    ctx.scr.classList.remove('fade');
+    await sleep(ctx, a.ms ?? 500);
+  },
+  async reveal(ctx, a) { const el = q(ctx, a.target); if (el) el.classList.remove('is-hidden'); await sleep(ctx, a.ms ?? 500); },
+  async toast(ctx, a) {
+    ctx.toast.textContent = a.text;
+    ctx.toast.classList.remove('is-hidden');
+    if (ctx.instant) return;
+    await sleep(ctx, a.ms ?? 1800);
+    ctx.toast.classList.add('is-hidden');
+  },
+  async fn(ctx, a) { a.run(ctx.scr); await sleep(ctx, a.ms ?? 300); },
+  async wait(ctx, a) { await sleep(ctx, a.ms ?? 800); }
+};
+async function runAction(ctx, a) {
+  if (a.caption != null) setCaption(ctx, a.caption);
+  await ACT[a.type](ctx, a);
+}
+
+/* 最終状態（印刷・動きを減らす設定用）を一気に描画 */
+async function renderFinal(cv, step) {
+  const ctx = makeCtx(cv, null);
+  resetCanvas(ctx, step);
+  for (const a of step.actions) await runAction(ctx, a);
+  if (ctx.moved) ctx.cursor.classList.add('mark');
+  return ctx;
+}
+
+/* =====================================================================
+   4. アプリ（ステップ一覧・プレーヤー・説明文）
+   ===================================================================== */
+const $ = s => document.querySelector(s);
+const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+const state = { idx: 0, speed: 1, runner: null, status: 'idle', visited: loadVisited() };
+
+function loadVisited() {
+  try { return new Set(JSON.parse(localStorage.getItem('kikan-manual-visited') || '[]')); } catch (e) { return new Set(); }
+}
+function saveVisited() {
+  try { localStorage.setItem('kikan-manual-visited', JSON.stringify([...state.visited])); } catch (e) { /* 保存できなくても動作に影響なし */ }
+}
+
+const stage = $('#stage');
+const playerCv = makeCanvas();
+stage.appendChild(playerCv);
+const fit = () => { playerCv.style.transform = `scale(${stage.clientWidth / W})`; };
+new ResizeObserver(fit).observe(stage);
+fit();
+
+function descHtml(s) {
+  return `<p class="d-purpose"><strong>目的：</strong>${esc(s.purpose)}</p>
+    <div class="d-cols">
+      <div><h3>操作手順</h3><ol>${s.steps.map(t => `<li>${esc(t)}</li>`).join('')}</ol></div>
+      <div class="d-notes"><h3>ポイント・注意</h3><ul>${s.points.map(t => `<li>${esc(t)}</li>`).join('')}</ul></div>
+    </div>`;
+}
+
+function renderList() {
+  $('#steps-list').innerHTML = STEPS.map((s, i) => `<li><button type="button" class="step-item${i === state.idx ? ' active' : ''}${state.visited.has(i) ? ' visited' : ''}" data-i="${i}" ${i === state.idx ? 'aria-current="step"' : ''}>
+      <span class="num">${i + 1}</span><span class="t">${esc(s.title)}</span><span class="done">✓</span></button></li>`).join('');
+  $('#visited-count').textContent = `閲覧済み ${state.visited.size} / ${STEPS.length}`;
+}
+
+function setPlayButton() {
+  const playing = state.status === 'playing';
+  $('#btn-play').innerHTML = playing
+    ? '<svg viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="5" width="4" height="14"/><rect x="14" y="5" width="4" height="14"/></svg>一時停止'
+    : '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 4v16l13-8z"/></svg>再生';
+}
+const setProgress = p => { $('#progress').style.width = (p * 100).toFixed(1) + '%'; };
+
+function stop() {
+  if (state.runner) state.runner.cancelled = true;
+  state.runner = null;
+}
+
+async function play() {
+  stop();
+  const runner = new Runner();
+  state.runner = runner;
+  state.status = 'playing';
+  setPlayButton();
+  const step = STEPS[state.idx];
+  const ctx = makeCtx(playerCv, runner);
+  ctx.onScreen = name => { $('#url').textContent = 'https://kikan.example.co.jp' + (URLS[name] || '/'); };
+  try {
+    while (true) {
+      resetCanvas(ctx, step);
+      setProgress(0);
+      await runner.sleep(500);
+      for (let i = 0; i < step.actions.length; i++) {
+        await runAction(ctx, step.actions[i]);
+        setProgress((i + 1) / step.actions.length);
+      }
+      markVisited(state.idx);
+      if (!$('#loop').checked) break;
+      await runner.sleep(2800);
+    }
+    state.status = 'ended';
+    setPlayButton();
+  } catch (e) {
+    if (e !== CANCEL) throw e;
+  }
+}
+
+async function showStill() {
+  stop();
+  state.status = 'ended';
+  setPlayButton();
+  const ctx = await renderFinal(playerCv, STEPS[state.idx]);
+  setProgress(1);
+  $('#url').textContent = 'https://kikan.example.co.jp' + (URLS[STEPS[state.idx].screen] || '/');
+  return ctx;
+}
+
+function markVisited(i) {
+  if (state.visited.has(i)) return;
+  state.visited.add(i);
+  saveVisited();
+  renderList();
+}
+
+function select(i, autoplay = true) {
+  state.idx = Math.max(0, Math.min(STEPS.length - 1, i));
+  const s = STEPS[state.idx];
+  renderList();
+  const act = $('.step-item.active');
+  if (act && window.matchMedia('(max-width: 900px)').matches) act.scrollIntoView({ block: 'nearest', inline: 'center' });
+  $('#desc-badge').textContent = `STEP ${state.idx + 1}`;
+  $('#desc-title').textContent = s.title;
+  $('#desc-body').innerHTML = descHtml(s);
+  $('#counter').textContent = `${state.idx + 1} / ${STEPS.length}`;
+  $('#btn-prev').disabled = state.idx === 0;
+  $('#btn-next').disabled = state.idx === STEPS.length - 1;
+  if (location.hash !== `#step-${state.idx + 1}`) history.replaceState(null, '', `#step-${state.idx + 1}`);
+  if (autoplay && !reduceMotion) play(); else showStill();
+}
+
+/* ---------- 操作イベント ---------- */
+$('#steps-list').addEventListener('click', e => {
+  const b = e.target.closest('.step-item');
+  if (b) select(+b.dataset.i);
+});
+$('#btn-prev').addEventListener('click', () => select(state.idx - 1));
+$('#btn-next').addEventListener('click', () => select(state.idx + 1));
+$('#btn-restart').addEventListener('click', play);
+$('#btn-play').addEventListener('click', togglePlay);
+function togglePlay() {
+  if (state.status === 'playing') { state.runner.paused = true; state.status = 'paused'; }
+  else if (state.status === 'paused' && state.runner) { state.runner.paused = false; state.status = 'playing'; }
+  else return play();
+  setPlayButton();
+}
+
+$('#speed').innerHTML = [0.5, 1, 1.5, 2].map(v => `<button type="button" data-v="${v}" class="${v === 1 ? 'on' : ''}">${v}x</button>`).join('');
+$('#speed').addEventListener('click', e => {
+  const b = e.target.closest('button'); if (!b) return;
+  state.speed = +b.dataset.v;
+  $('#speed').querySelectorAll('button').forEach(x => x.classList.toggle('on', x === b));
+});
+
+document.addEventListener('keydown', e => {
+  if (e.target.matches('input, select, textarea') || e.metaKey || e.ctrlKey || e.altKey) return;
+  if (e.key === 'ArrowRight') select(state.idx + 1);
+  else if (e.key === 'ArrowLeft') select(state.idx - 1);
+  else if (e.key === ' ' && !e.target.closest('button')) { e.preventDefault(); togglePlay(); }
+});
+window.addEventListener('hashchange', () => {
+  const m = location.hash.match(/^#step-(\d+)$/);
+  if (m && +m[1] - 1 !== state.idx) select(+m[1] - 1);
+});
+
+/* =====================================================================
+   5. 印刷
+   ===================================================================== */
+const PRINT_W = 680;
+async function buildPrint(indices, withCover) {
+  const root = $('#print-root');
+  root.innerHTML = '';
+  if (withCover) {
+    const cover = document.createElement('section');
+    cover.className = 'p-cover';
+    cover.innerHTML = `<h1>基幹システム 操作マニュアル</h1>
+      <div class="sub">受注登録の基本操作（全${STEPS.length}ステップ）　印刷日：${new Date().toLocaleDateString('ja-JP')}</div>
+      <h2>目次</h2><ol>${STEPS.map(s => `<li>${esc(s.title)}</li>`).join('')}</ol>`;
+    root.appendChild(cover);
+  }
+  for (const i of indices) {
+    const s = STEPS[i];
+    const sec = document.createElement('section');
+    sec.className = 'p-step';
+    sec.innerHTML = `<div class="p-head"><span class="badge">STEP ${i + 1}</span><h2>${esc(s.title)}</h2></div>`;
+    const wrap = document.createElement('div');
+    wrap.className = 'p-screen';
+    wrap.style.width = PRINT_W + 'px';
+    wrap.style.height = PRINT_W * H / W + 'px';
+    const cv = makeCanvas();
+    cv.style.transform = `scale(${PRINT_W / W})`;
+    wrap.appendChild(cv);
+    sec.appendChild(wrap);
+    sec.insertAdjacentHTML('beforeend', `<div class="p-desc">${descHtml(s)}</div>`);
+    root.appendChild(sec);
+    await renderFinal(cv, s);
+  }
+}
+async function doPrint(indices, withCover) {
+  await buildPrint(indices, withCover);
+  state.printReady = true;
+  window.print();
+}
+$('#print-all').addEventListener('click', () => doPrint(STEPS.map((_, i) => i), true));
+$('#print-one').addEventListener('click', () => doPrint([state.idx], false));
+/* ブラウザのメニューから印刷した場合は全ステップを出力 */
+window.addEventListener('beforeprint', () => { if (!state.printReady) buildPrint(STEPS.map((_, i) => i), true); });
+window.addEventListener('afterprint', () => { state.printReady = false; $('#print-root').innerHTML = ''; });
+
+window.ManualApp = { STEPS, buildPrint, select, state };
+
+/* ---------- 起動 ---------- */
+const m = location.hash.match(/^#step-(\d+)$/);
+select(m ? +m[1] - 1 : 0);
+</script>
+</body>
+</html>
